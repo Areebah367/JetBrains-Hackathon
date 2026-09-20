@@ -41,7 +41,7 @@ data class UiState(
      */
     val freeSlots: List<FreeSlot> = emptyList(),
     val calendarConnected: Boolean = false,
-    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeMode: ThemeMode = ThemeMode.DARK,
 ) {
     /** The planner rebuilt from the current state. Cheap: everything it derives is computed on read. */
     val planner: PlannerState
