@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import areebah.nyuad4jetbrains.project.domain.Event
+import areebah.nyuad4jetbrains.project.data.RoutineBlock
 import areebah.nyuad4jetbrains.project.planner.FreeSlot
 import areebah.nyuad4jetbrains.project.planner.PlannerState
 import areebah.nyuad4jetbrains.project.planner.accepted
@@ -55,6 +56,7 @@ private val gutterWidth = 44.dp
 fun CalendarView(
     planner: PlannerState,
     freeSlots: List<FreeSlot>,
+    busyBlocks: List<RoutineBlock>,
     today: LocalDate,
     days: Int = 7,
     onEventClick: (Event) -> Unit = {},
@@ -96,6 +98,7 @@ fun CalendarView(
                     DayColumn(
                         date = date,
                         freeSlots = freeSlots.filter { it.start.date == date },
+                        busyBlocks = busyBlocks.filter { it.start.date == date },
                         accepted = accepted.filter { it.date == date },
                         maybes = maybes.filter { it.date == date },
                         planner = planner,
@@ -127,6 +130,7 @@ private fun HourGutter() {
 private fun DayColumn(
     date: LocalDate,
     freeSlots: List<FreeSlot>,
+    busyBlocks: List<RoutineBlock>,
     accepted: List<Event>,
     maybes: List<Event>,
     planner: PlannerState,
@@ -157,6 +161,27 @@ private fun DayColumn(
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)),
             )
+        }
+
+        // Busy time on top of the free shading, so it reads as carved out of the day.
+        busyBlocks.forEach { block ->
+            Box(
+                Modifier
+                    .offset(y = topOffset(block.start))
+                    .height(spanHeight(block.start, block.end))
+                    .fillMaxWidth()
+                    .padding(horizontal = 1.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+            ) {
+                Text(
+                    block.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 3.dp, vertical = 2.dp),
+                )
+            }
         }
 
         maybes.forEach { event ->
