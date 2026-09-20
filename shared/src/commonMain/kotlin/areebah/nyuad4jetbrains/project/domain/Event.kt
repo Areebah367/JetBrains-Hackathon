@@ -4,9 +4,11 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 
 /** Where an event came from, so the UI can be honest about it. */
+@Serializable
 enum class EventSource {
     /** Live from the Ticketmaster Discovery API. */
     TICKETMASTER,
@@ -19,6 +21,7 @@ enum class EventSource {
 }
 
 /** An event, with times in local UAE time. Missing details are null, never guessed. */
+@Serializable
 data class Event(
     val id: String,
     val name: String,

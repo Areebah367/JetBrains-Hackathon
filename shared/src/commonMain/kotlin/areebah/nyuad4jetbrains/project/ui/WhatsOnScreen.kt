@@ -33,9 +33,18 @@ import areebah.nyuad4jetbrains.project.domain.EventSource
 import areebah.nyuad4jetbrains.project.domain.Horizon
 import areebah.nyuad4jetbrains.project.domain.RankedEvent
 import areebah.nyuad4jetbrains.project.domain.buildSchedule
-import areebah.nyuad4jetbrains.project.domain.formatDay
-import areebah.nyuad4jetbrains.project.domain.formatPrice
-import areebah.nyuad4jetbrains.project.domain.formatTime
+import kotlinproject.shared.generated.resources.Res
+import kotlinproject.shared.generated.resources.whats_on_title
+import kotlinproject.shared.generated.resources.refresh
+import kotlinproject.shared.generated.resources.only_my_interests
+import kotlinproject.shared.generated.resources.empty_filtered
+import kotlinproject.shared.generated.resources.empty_period
+import kotlinproject.shared.generated.resources.matches
+import kotlinproject.shared.generated.resources.sold_out
+import kotlinproject.shared.generated.resources.source_ticketmaster
+import kotlinproject.shared.generated.resources.source_community
+import kotlinproject.shared.generated.resources.source_sample
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,8 +71,8 @@ fun WhatsOnScreen(
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("What's on", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-            TextButton(onClick = onRefresh, enabled = !state.loading) { Text("Refresh") }
+            Text(stringResource(Res.string.whats_on_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+            TextButton(onClick = onRefresh, enabled = !state.loading) { Text(stringResource(Res.string.refresh)) }
         }
 
         Row(
@@ -74,7 +83,7 @@ fun WhatsOnScreen(
                 FilterChip(
                     selected = state.filters.horizon == horizon,
                     onClick = { onHorizonChange(horizon) },
-                    label = { Text(horizon.label) },
+                    label = { Text(horizonText(horizon)) },
                 )
             }
         }
@@ -107,7 +116,7 @@ fun WhatsOnScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Only my interests",
+                stringResource(Res.string.only_my_interests),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
             )
@@ -122,9 +131,9 @@ fun WhatsOnScreen(
             schedule.isEmpty() -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(
                     if (state.filters.onlyMatching) {
-                        "Nothing matches your interests here. Turn off the filter, or look further ahead."
+                        stringResource(Res.string.empty_filtered)
                     } else {
-                        "No events in this period. Try looking further ahead."
+                        stringResource(Res.string.empty_period)
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
@@ -137,7 +146,7 @@ fun WhatsOnScreen(
                 schedule.forEach { day ->
                     item {
                         Text(
-                            formatDay(day.date, today!!),
+                            dayText(day.date, today!!),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(top = 8.dp),
                         )
@@ -157,16 +166,16 @@ private fun EventCard(ranked: RankedEvent, modifier: Modifier = Modifier) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(event.name, style = MaterialTheme.typography.titleMedium)
             Text(
-                listOfNotNull(formatTime(event), event.venue, event.city).joinToString(" · "),
+                listOfNotNull(timeText(event), event.venue, event.city).joinToString(" · "),
                 style = MaterialTheme.typography.bodyMedium,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(formatPrice(event), style = MaterialTheme.typography.bodyMedium)
+                Text(priceText(event), style = MaterialTheme.typography.bodyMedium)
                 if (event.soldOut) {
                     AssistChip(
                         onClick = {},
                         enabled = false,
-                        label = { Text("Full") },
+                        label = { Text(stringResource(Res.string.sold_out)) },
                         colors = AssistChipDefaults.assistChipColors(
                             disabledLabelColor = MaterialTheme.colorScheme.error,
                         ),
@@ -174,18 +183,22 @@ private fun EventCard(ranked: RankedEvent, modifier: Modifier = Modifier) {
                 }
             }
             if (ranked.matches.isNotEmpty()) {
+                // `map` is inline, so the composable lookup is legal here; joinToString's lambda is not.
+                val matchNames = ranked.matches.map { interestText(it) }.joinToString(", ")
                 Text(
-                    "Matches: ${ranked.matches.joinToString(", ")}",
+                    stringResource(Res.string.matches, matchNames),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
             Text(
-                when (event.source) {
-                    EventSource.TICKETMASTER -> "Ticketmaster"
-                    EventSource.CURATED -> "Community"
-                    EventSource.SAMPLE -> "Sample data"
-                },
+                stringResource(
+                    when (event.source) {
+                        EventSource.TICKETMASTER -> Res.string.source_ticketmaster
+                        EventSource.CURATED -> Res.string.source_community
+                        EventSource.SAMPLE -> Res.string.source_sample
+                    },
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
