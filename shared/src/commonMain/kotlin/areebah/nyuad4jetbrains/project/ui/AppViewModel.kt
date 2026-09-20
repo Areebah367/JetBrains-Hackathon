@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import areebah.nyuad4jetbrains.project.data.EventRepository
 import areebah.nyuad4jetbrains.project.data.EventsResult
 import areebah.nyuad4jetbrains.project.data.defaultEventRepository
+import areebah.nyuad4jetbrains.project.data.demoBusyBlocks
 import areebah.nyuad4jetbrains.project.domain.AbuDhabiTime
 import areebah.nyuad4jetbrains.project.domain.Horizon
 import areebah.nyuad4jetbrains.project.domain.InterestProfile
@@ -36,8 +37,8 @@ data class UiState(
     val decisions: Map<String, Decision> = emptyMap(),
     val userPrices: Map<String, Double> = emptyMap(),
     /**
-     * Busy time is not read from the phone's calendar yet, so every day counts as free inside the
-     * planner's day window. The Plan screen says so rather than implying a calendar is connected.
+     * Free time left once busy blocks are removed. The blocks currently come from [demoBusyBlocks],
+     * a stand-in daily routine, because neither platform's real calendar reader is wired up yet.
      */
     val freeSlots: List<FreeSlot> = emptyList(),
     val calendarConnected: Boolean = false,
@@ -74,7 +75,12 @@ class AppViewModel(
                     loading = false,
                     today = today,
                     result = result,
-                    freeSlots = computeFreeSlots(busy = emptyList(), from = today, days = PLANNING_DAYS),
+                    freeSlots = computeFreeSlots(
+                        busy = demoBusyBlocks(today, PLANNING_DAYS),
+                        from = today,
+                        days = PLANNING_DAYS,
+                    ),
+                    calendarConnected = true,
                 )
             }
         }

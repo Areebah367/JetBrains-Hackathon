@@ -1,4 +1,4 @@
-# JetBrains-Hackathon
+# $ocial
 
 A **Kotlin Multiplatform** event planner for Abu Dhabi and Dubai, built for the JetBrains Kotlin Multiplatform hackathon.
 
@@ -8,7 +8,7 @@ Tell it what you're into, and it shows what's on, what fits your free time, and 
 
 1. **My interests** — pick categories and type free-text hobbies.
 2. **What's on** — events grouped by day, filtered by city and how far ahead you're looking, with matching events first.
-3. **My plan** — set a budget, accept or dismiss suggestions, and see them laid out in a **calendar view** against your free time. Since most events carry no price, accepting one lets you type what it costs, so the budget stays honest.
+3. **My plan** — set a budget, accept or dismiss suggestions, and see them laid out in a **calendar view** against the gaps in your day. Since most events carry no price, accepting one lets you type what it costs, so the budget stays honest.
 
 ## Kotlin Multiplatform
 

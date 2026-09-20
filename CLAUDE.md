@@ -6,7 +6,7 @@ conflicts and wasted work.
 
 ## Project
 
-**Name:** TODO — still unnamed. The repo is called `JetBrains-Hackathon`; pick something real.
+**Name:** $ocial
 **Event:** JetBrains Kotlin Multiplatform hackathon.
 **Pitch:** An event planner for Abu Dhabi and Dubai. It gathers what's on, matches it to your
 interests, and — next — checks your budget and calendar so you can say Yes or No to each suggestion.

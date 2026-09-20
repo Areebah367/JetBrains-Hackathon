@@ -47,7 +47,7 @@
     <string name="no_events_loaded">لم يتم تحميل أي فعاليات بعد.</string>
     <string name="nothing_fits">لا شيء آخر يناسب وقتك الحر وميزانيتك.</string>
     <string name="free_slots_count">%1$d فترات حرة خلال الأسبوعين القادمين</string>
-    <string name="free_from_calendar">من تقويم هاتفك.</string>
+    <string name="free_from_calendar">حول مواعيد وجباتك ونومك. روتين تجريبي — لم يتم ربط قارئ التقويم الحقيقي بعد.</string>
     <string name="free_no_calendar">لم يتم ربط تقويمك بعد، لذلك يُحتسب كل يوم حرًا بين الساعة ٠٩:٠٠ و٢٢:٠٠.</string>
     <string name="legend_in_plan">في خطتك</string>
     <string name="legend_suggestion">اقتراح — اضغط للإضافة</string>
