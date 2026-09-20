@@ -25,24 +25,58 @@ A Kotlin Multiplatform (KMP) app that runs on **Android and iOS** from a single 
 
 No calendar and no budget yet. Only this:
 
-1. **Fetch events** from the Ticketmaster Discovery API for Abu Dhabi.
+1. **Fetch events** for Abu Dhabi **and Dubai** from the Ticketmaster Discovery API, merged with a
+   curated list of community events the team enters by hand.
 2. **Interests.** The user picks interests and types other hobbies in the app.
-3. **This week.** A list of the next 7 days, grouped by day. Events matching the user's interests come first, and a switch hides the rest.
+3. **What's on.** Events grouped by day, filtered by horizon (This week / This month / Everything)
+   and by city. Events matching the user's interests come first, and a switch hides the rest.
 
-Status: built on branch `feature/events-and-interests`. The Ticketmaster call has not yet been tried with a real key, so it is not confirmed that Abu Dhabi events come back. Until then the app shows clearly labelled sample events.
+Status: built on branch `feature/events-and-interests`.
+
+### What the Ticketmaster data actually looks like
+
+Measured with a real key on 2026-09-20. These numbers drove the design, so do not undo the
+workarounds without re-measuring:
+
+- **76 UAE events**: 33 Abu Dhabi, 43 Dubai. Segments: Music 29, Arts & Theatre 25, Sports 14, Misc 8.
+- **No prices anywhere.** 0 of 133 events carried `priceRanges`, including 100 London events and the
+  single-event detail endpoint. Do not build anything that assumes Ticketmaster supplies a price.
+- **Nothing soon.** Abu Dhabi events ran 2026-10-11 to 2027-01-31; exactly 1 within 30 days and 0
+  within 7. This is why the fixed 7-day window was replaced with a horizon filter.
+
+### Event sources
+
+1. **Curated** (`data/CuratedEvents.kt`) — community events typed in by hand from event pages the
+   team looked at. This is where real prices, end times, and near-term events come from. Nothing is
+   scraped: a person reads a page and types the details. Keep it that way, because Luma's and
+   Partiful's terms only allow access through their own interfaces.
+2. **Ticketmaster** — live, for large ticketed shows booked months ahead.
+3. **Sample** (`data/SampleEvents.kt`) — made-up, shown only when the other two produce nothing.
+
+The repository merges 1 and 2 and dedupes by id. A Ticketmaster failure must never hide the curated
+events; it only adds a notice.
 
 ### Ticketmaster key
 
-- Use the regular **Discovery API** (`https://app.ticketmaster.com/discovery/v2/events.json`). The International Discovery API no longer issues new keys.
-- Each person registers their own free key at the Ticketmaster developer portal, then adds `ticketmaster.apiKey=YOUR_KEY` to `local.properties` (gitignored) or sets the `TICKETMASTER_API_KEY` environment variable. The build turns it into a generated file, so it never enters the repo.
-- With no key, or on any failure, the app shows sample events and says why. Do not remove this fallback.
+- Use the regular **Discovery API** (`https://app.ticketmaster.com/discovery/v2/events.json`). The
+  International Discovery API no longer issues new keys.
+- Each person registers their own free key (5,000 calls/day), then adds `ticketmaster.apiKey=YOUR_KEY`
+  to `local.properties` (gitignored) or sets the `TICKETMASTER_API_KEY` environment variable. The
+  build writes it into a generated file, so it never enters the repo.
+
+### The Event model
+
+`domain/Event.kt` is shared by both people. Changing it needs agreement. It carries `city`, an
+optional `end` (curated events have one, Ticketmaster events never do), `soldOut`, and a `source`.
+Prices are `priceMin`/`priceMax`/`currency` and are **often null** — show "Price unknown" and never
+substitute zero.
 
 ### Full flow (after the current focus)
 
 1. **Budget.** The user sets a budget in AED.
 2. **Calendar.** The app reads the phone's calendar (read-only) and works out the free slots over the next few days. Manually entered free slots are the fallback if calendar permission is denied.
-3. **Events.** The app fetches upcoming Abu Dhabi events from the Ticketmaster Discovery API.
-4. **Match.** An event that fits inside a free slot and costs no more than the remaining budget becomes a **"maybe" suggestion**, shown semi-transparent.
+3. **Events.** Curated community events merged with live Ticketmaster events, for Abu Dhabi and Dubai.
+4. **Match.** An event that fits inside a free slot and costs no more than the remaining budget becomes a **"maybe" suggestion**, shown semi-transparent. Sold-out events are never suggested.
 5. **Decide.** The user taps **Yes** or **No** on each maybe.
    - **Yes:** the card turns solid and joins the plan. Its price comes off the remaining budget. Other maybes that now overlap it, or no longer fit the budget, disappear.
    - **No:** the event is dismissed and never suggested again.
@@ -58,8 +92,11 @@ Every event is in exactly one state: `Maybe`, `Yes`, or `No`. Model this as a se
 
 - Maybes are ordered simply: soonest first, then cheapest. No complex scoring yet.
 - The calendar is read-only. Do not write events back to it.
-- If Ticketmaster gives no price, show the event with a "price unknown" badge, do not subtract from the budget, and warn the user.
-- Use `kotlinx-datetime` with the `Asia/Dubai` time zone (Abu Dhabi, UTC+4, no daylight saving).
+- **Prices come from curated events, or from the user.** Ticketmaster supplies none. An event with a
+  null price shows "Price unknown", counts as 0 against the budget, and must not be silently treated
+  as free. Letting the user type a price on the event they accept is the intended fix.
+- Use an event's `end` when it has one, and assume a duration only when it does not.
+- Use `kotlinx-datetime` with the `Asia/Dubai` time zone (Abu Dhabi and Dubai, UTC+4, no daylight saving).
 - The Ticketmaster API key goes in `local.properties`, which is gitignored. Never commit it or paste it into chat.
 - Do not scrape Luma or Partiful. Their terms restrict access to official interfaces.
 
@@ -67,6 +104,7 @@ Every event is in exactly one state: `Maybe`, `Yes`, or `No`. Model this as a se
 
 - An event outside every free slot is never a maybe.
 - An event above the remaining budget is never a maybe.
+- A sold-out event is never a maybe.
 - Tapping Yes reduces the remaining budget by the event's price.
 - After a Yes, overlapping maybes and maybes that no longer fit the budget are removed.
 - A No event never comes back.
@@ -74,11 +112,10 @@ Every event is in exactly one state: `Maybe`, `Yes`, or `No`. Model this as a se
 
 ### Build order (do not skip ahead)
 
-1. Domain model and matching logic in `commonMain`, with the tests above.
-2. Screens using sample events and manually entered free slots: budget, the maybe list with Yes/No, and the plan.
-3. Ticketmaster fetch (Ktor and kotlinx.serialization).
-4. Phone calendar reader (`CalendarReader` interface with an `expect`/`actual` for Android and iOS).
-5. Persist decisions on the device, then polish and a demo script.
+1. ~~Events, interests, and the What's on list~~ — done.
+2. Budget, free slots, and the maybe list with Yes/No, over the merged event list.
+3. Phone calendar reader (`CalendarReader` interface with an `expect`/`actual` for Android and iOS).
+4. Persist decisions and interests on the device, then polish and a demo script.
 
 ### Out of scope for now
 
