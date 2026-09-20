@@ -41,6 +41,7 @@ data class UiState(
      */
     val freeSlots: List<FreeSlot> = emptyList(),
     val calendarConnected: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 ) {
     /** The planner rebuilt from the current state. Cheap: everything it derives is computed on read. */
     val planner: PlannerState
@@ -98,6 +99,10 @@ class AppViewModel(
     /** Tapping a selected city clears it, so the chips behave as "all" when none is on. */
     fun toggleCity(city: String) = updateFilters { filters ->
         filters.copy(cities = if (city in filters.cities) filters.cities - city else filters.cities + city)
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        _state.update { it.copy(themeMode = mode) }
     }
 
     fun setBudget(value: Double) {

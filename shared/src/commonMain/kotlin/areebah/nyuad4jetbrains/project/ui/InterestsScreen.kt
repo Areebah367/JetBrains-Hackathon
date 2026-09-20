@@ -11,6 +11,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,8 +27,10 @@ import areebah.nyuad4jetbrains.project.domain.Interests
 @Composable
 fun InterestsScreen(
     profile: InterestProfile,
+    themeMode: ThemeMode,
     onToggleInterest: (String) -> Unit,
     onOtherHobbiesChange: (String) -> Unit,
+    onThemeModeChange: (ThemeMode) -> Unit,
     onShowWeek: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -65,6 +70,19 @@ fun InterestsScreen(
 
         Button(onClick = onShowWeek, modifier = Modifier.fillMaxWidth()) {
             Text("Show what's on")
+        }
+
+        Text("Appearance", style = MaterialTheme.typography.titleSmall)
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            ThemeMode.entries.forEachIndexed { index, mode ->
+                SegmentedButton(
+                    selected = themeMode == mode,
+                    onClick = { onThemeModeChange(mode) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = ThemeMode.entries.size),
+                ) {
+                    Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
+                }
+            }
         }
     }
 }
