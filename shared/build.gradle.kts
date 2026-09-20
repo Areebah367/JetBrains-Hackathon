@@ -64,6 +64,14 @@ kotlin {
         }
     }
 
+    // Desktop exists only so the shared Compose UI can be looked at without a simulator or an
+    // Android emulator: `./gradlew :shared:run`. It is not a shipping target — Android and iOS are.
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
+    }
+
     android {
        namespace = "areebah.nyuad4jetbrains.project.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -98,6 +106,12 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+        val desktopMain by getting
+        desktopMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.kotlinx.coroutines.swing)
+        }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -123,4 +137,10 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+}
+
+compose.desktop {
+    application {
+        mainClass = "areebah.nyuad4jetbrains.project.DesktopPreviewKt"
+    }
 }
