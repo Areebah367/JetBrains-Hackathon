@@ -1,0 +1,84 @@
+<resources>
+    <!-- Navigation -->
+    <string name="tab_interests">My interests</string>
+    <string name="tab_whats_on">What\'s on</string>
+    <string name="tab_plan">My plan</string>
+
+    <!-- Interests screen -->
+    <string name="interests_title">What are you into?</string>
+    <string name="interests_subtitle">Pick a few. Matching events in Abu Dhabi and Dubai go to the top of your list.</string>
+    <string name="interests_other_label">Other hobbies</string>
+    <string name="interests_other_placeholder">e.g. chess, padel, jazz</string>
+    <string name="interests_other_support">Separate with commas</string>
+    <string name="interests_show_whats_on">Show what\'s on</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <!-- What's on -->
+    <string name="whats_on_title">What\'s on</string>
+    <string name="refresh">Refresh</string>
+    <string name="only_my_interests">Only my interests</string>
+    <string name="empty_filtered">Nothing matches your interests here. Turn off the filter, or look further ahead.</string>
+    <string name="empty_period">No events in this period. Try looking further ahead.</string>
+    <string name="matches">Matches: %1$s</string>
+    <string name="source_ticketmaster">Ticketmaster</string>
+    <string name="source_community">Community</string>
+    <string name="source_sample">Sample data</string>
+    <string name="sold_out">Full</string>
+    <string name="horizon_week">This week</string>
+    <string name="horizon_month">This month</string>
+    <string name="horizon_all">Everything</string>
+
+    <!-- Plan -->
+    <string name="view_list">List</string>
+    <string name="view_calendar">Calendar</string>
+    <string name="remaining_budget">Remaining budget</string>
+    <string name="budget">Budget</string>
+    <string name="planned_summary">%1$s planned across %2$d event(s)</string>
+    <string name="over_budget">You are over budget. Remove something, or raise the budget.</string>
+    <string name="start_over">Start over</string>
+    <string name="your_plan">Your plan</string>
+    <string name="suggestions">Suggestions</string>
+    <string name="im_in">I\'m in</string>
+    <string name="not_for_me">Not for me</string>
+    <string name="remove">Remove</string>
+    <string name="no_events_loaded">No events loaded yet.</string>
+    <string name="nothing_fits">Nothing else fits your free time and budget.</string>
+    <string name="free_slots_count">%1$d free slots over the next two weeks</string>
+    <string name="free_from_calendar">From your phone\'s calendar.</string>
+    <string name="free_no_calendar">Your calendar is not connected yet, so every day counts as free between 09:00 and 22:00.</string>
+    <string name="legend_in_plan">In your plan</string>
+    <string name="legend_suggestion">Suggestion — tap to add</string>
+
+    <!-- Price dialog -->
+    <string name="price_dialog_title">What does it cost?</string>
+    <string name="price_dialog_body">We don\'t have a price for \"%1$s\". Enter what you expect to pay so your budget stays accurate, or skip it.</string>
+    <string name="price_dialog_field">Price in AED</string>
+    <string name="add_to_plan">Add to plan</string>
+    <string name="skip">Skip</string>
+    <string name="price_you_entered">%1$s (you entered this)</string>
+
+    <!-- Formatting -->
+    <string name="price_unknown">Price unknown</string>
+    <string name="price_free">Free</string>
+    <string name="time_tba">Time TBA</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="currency_amount">AED %1$s</string>
+
+    <!-- Interest categories -->
+    <string name="interest_music">Music</string>
+    <string name="interest_sports">Sports</string>
+    <string name="interest_fitness">Fitness</string>
+    <string name="interest_comedy">Comedy</string>
+    <string name="interest_theatre">Theatre &amp; arts</string>
+    <string name="interest_workshops">Workshops</string>
+    <string name="interest_food">Food &amp; drink</string>
+    <string name="interest_markets">Markets &amp; pop-ups</string>
+    <string name="interest_networking">Networking</string>
+    <string name="interest_wellness">Wellness</string>
+    <string name="interest_family">Family</string>
+    <string name="interest_film">Film</string>
+</resources>

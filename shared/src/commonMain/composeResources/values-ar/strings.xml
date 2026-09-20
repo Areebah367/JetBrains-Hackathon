@@ -1,0 +1,84 @@
+<resources>
+    <!-- Navigation -->
+    <string name="tab_interests">اهتماماتي</string>
+    <string name="tab_whats_on">ما الجديد</string>
+    <string name="tab_plan">خطتي</string>
+
+    <!-- Interests screen -->
+    <string name="interests_title">ما الذي يهمك؟</string>
+    <string name="interests_subtitle">اختر بعض الاهتمامات. الفعاليات المطابقة في أبوظبي ودبي تظهر في أعلى قائمتك.</string>
+    <string name="interests_other_label">هوايات أخرى</string>
+    <string name="interests_other_placeholder">مثال: الشطرنج، البادل، الجاز</string>
+    <string name="interests_other_support">افصل بينها بفواصل</string>
+    <string name="interests_show_whats_on">اعرض ما الجديد</string>
+    <string name="appearance">المظهر</string>
+    <string name="theme_system">النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+
+    <!-- What's on -->
+    <string name="whats_on_title">ما الجديد</string>
+    <string name="refresh">تحديث</string>
+    <string name="only_my_interests">اهتماماتي فقط</string>
+    <string name="empty_filtered">لا شيء يطابق اهتماماتك هنا. أوقف عامل التصفية أو ابحث في فترة أبعد.</string>
+    <string name="empty_period">لا توجد فعاليات في هذه الفترة. جرّب فترة أبعد.</string>
+    <string name="matches">يطابق: %1$s</string>
+    <string name="source_ticketmaster">تيكت ماستر</string>
+    <string name="source_community">من المجتمع</string>
+    <string name="source_sample">بيانات تجريبية</string>
+    <string name="sold_out">مكتمل</string>
+    <string name="horizon_week">هذا الأسبوع</string>
+    <string name="horizon_month">هذا الشهر</string>
+    <string name="horizon_all">كل الفعاليات</string>
+
+    <!-- Plan -->
+    <string name="view_list">قائمة</string>
+    <string name="view_calendar">تقويم</string>
+    <string name="remaining_budget">الميزانية المتبقية</string>
+    <string name="budget">الميزانية</string>
+    <string name="planned_summary">%1$s مخططة عبر %2$d فعالية</string>
+    <string name="over_budget">لقد تجاوزت ميزانيتك. احذف شيئًا أو ارفع الميزانية.</string>
+    <string name="start_over">ابدأ من جديد</string>
+    <string name="your_plan">خطتك</string>
+    <string name="suggestions">اقتراحات</string>
+    <string name="im_in">أنا موافق</string>
+    <string name="not_for_me">ليست لي</string>
+    <string name="remove">إزالة</string>
+    <string name="no_events_loaded">لم يتم تحميل أي فعاليات بعد.</string>
+    <string name="nothing_fits">لا شيء آخر يناسب وقتك الحر وميزانيتك.</string>
+    <string name="free_slots_count">%1$d فترات حرة خلال الأسبوعين القادمين</string>
+    <string name="free_from_calendar">من تقويم هاتفك.</string>
+    <string name="free_no_calendar">لم يتم ربط تقويمك بعد، لذلك يُحتسب كل يوم حرًا بين الساعة ٠٩:٠٠ و٢٢:٠٠.</string>
+    <string name="legend_in_plan">في خطتك</string>
+    <string name="legend_suggestion">اقتراح — اضغط للإضافة</string>
+
+    <!-- Price dialog -->
+    <string name="price_dialog_title">كم التكلفة؟</string>
+    <string name="price_dialog_body">ليس لدينا سعر لـ \"%1$s\". أدخل ما تتوقع دفعه لتبقى ميزانيتك دقيقة، أو تخطَّ ذلك.</string>
+    <string name="price_dialog_field">السعر بالدرهم</string>
+    <string name="add_to_plan">أضف إلى الخطة</string>
+    <string name="skip">تخطٍ</string>
+    <string name="price_you_entered">%1$s (أدخلته بنفسك)</string>
+
+    <!-- Formatting -->
+    <string name="price_unknown">السعر غير معروف</string>
+    <string name="price_free">مجاني</string>
+    <string name="time_tba">الوقت لم يُعلن</string>
+    <string name="today">اليوم</string>
+    <string name="tomorrow">غدًا</string>
+    <string name="currency_amount">%1$s درهم</string>
+
+    <!-- Interest categories -->
+    <string name="interest_music">موسيقى</string>
+    <string name="interest_sports">رياضة</string>
+    <string name="interest_fitness">لياقة</string>
+    <string name="interest_comedy">كوميديا</string>
+    <string name="interest_theatre">مسرح وفنون</string>
+    <string name="interest_workshops">ورش عمل</string>
+    <string name="interest_food">طعام ومشروبات</string>
+    <string name="interest_markets">أسواق وفعاليات مؤقتة</string>
+    <string name="interest_networking">تواصل مهني</string>
+    <string name="interest_wellness">صحة وعافية</string>
+    <string name="interest_family">عائلة</string>
+    <string name="interest_film">أفلام</string>
+</resources>

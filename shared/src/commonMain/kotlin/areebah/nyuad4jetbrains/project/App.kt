@@ -19,6 +19,11 @@ import areebah.nyuad4jetbrains.project.ui.AppViewModel
 import areebah.nyuad4jetbrains.project.ui.InterestsScreen
 import areebah.nyuad4jetbrains.project.ui.PlanScreen
 import areebah.nyuad4jetbrains.project.ui.WhatsOnScreen
+import kotlinproject.shared.generated.resources.Res
+import kotlinproject.shared.generated.resources.tab_interests
+import kotlinproject.shared.generated.resources.tab_whats_on
+import kotlinproject.shared.generated.resources.tab_plan
+import org.jetbrains.compose.resources.stringResource
 
 private const val TAB_INTERESTS = 0
 private const val TAB_WHATS_ON = 1
@@ -38,19 +43,19 @@ fun App() {
                         selected = tab == TAB_INTERESTS,
                         onClick = { tab = TAB_INTERESTS },
                         icon = {},
-                        label = { Text("My interests") },
+                        label = { Text(stringResource(Res.string.tab_interests)) },
                     )
                     NavigationBarItem(
                         selected = tab == TAB_WHATS_ON,
                         onClick = { tab = TAB_WHATS_ON },
                         icon = {},
-                        label = { Text("What's on") },
+                        label = { Text(stringResource(Res.string.tab_whats_on)) },
                     )
                     NavigationBarItem(
                         selected = tab == TAB_PLAN,
                         onClick = { tab = TAB_PLAN },
                         icon = {},
-                        label = { Text("My plan") },
+                        label = { Text(stringResource(Res.string.tab_plan)) },
                     )
                 }
             },

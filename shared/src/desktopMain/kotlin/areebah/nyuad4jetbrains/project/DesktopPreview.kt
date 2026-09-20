@@ -18,8 +18,19 @@ import androidx.compose.ui.window.rememberWindowState
  * and anything that only works here does not count as done.
  *
  * The window is sized to roughly a phone so the layout is judged at the width it ships at.
+ *
+ * Set `APP_LANG=ar` to see the Arabic translation and right-to-left layout.
  */
-fun main() = application {
+fun main() {
+    // Compose resources follow the JVM's default locale, so this is how the preview is shown in
+    // Arabic without changing the whole machine: APP_LANG=ar ./gradlew :shared:run
+    System.getenv("APP_LANG")?.takeIf { it.isNotBlank() }?.let { lang ->
+        java.util.Locale.setDefault(java.util.Locale.forLanguageTag(lang))
+    }
+    preview()
+}
+
+private fun preview() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "Desktop preview (phone-sized)",

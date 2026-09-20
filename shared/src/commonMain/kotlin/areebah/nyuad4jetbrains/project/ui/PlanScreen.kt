@@ -42,9 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import areebah.nyuad4jetbrains.project.domain.Event
-import areebah.nyuad4jetbrains.project.domain.formatDay
-import areebah.nyuad4jetbrains.project.domain.formatPrice
-import areebah.nyuad4jetbrains.project.domain.formatTime
 import areebah.nyuad4jetbrains.project.planner.Decision
 import areebah.nyuad4jetbrains.project.planner.PlannerState
 import areebah.nyuad4jetbrains.project.planner.accepted
@@ -53,6 +50,33 @@ import areebah.nyuad4jetbrains.project.planner.maybes
 import areebah.nyuad4jetbrains.project.planner.priceOf
 import areebah.nyuad4jetbrains.project.planner.remainingBudget
 import areebah.nyuad4jetbrains.project.planner.spent
+import kotlinproject.shared.generated.resources.Res
+import kotlinproject.shared.generated.resources.view_list
+import kotlinproject.shared.generated.resources.view_calendar
+import kotlinproject.shared.generated.resources.legend_in_plan
+import kotlinproject.shared.generated.resources.legend_suggestion
+import kotlinproject.shared.generated.resources.your_plan
+import kotlinproject.shared.generated.resources.suggestions
+import kotlinproject.shared.generated.resources.no_events_loaded
+import kotlinproject.shared.generated.resources.nothing_fits
+import kotlinproject.shared.generated.resources.remaining_budget
+import kotlinproject.shared.generated.resources.planned_summary
+import kotlinproject.shared.generated.resources.budget
+import kotlinproject.shared.generated.resources.over_budget
+import kotlinproject.shared.generated.resources.start_over
+import kotlinproject.shared.generated.resources.free_slots_count
+import kotlinproject.shared.generated.resources.free_from_calendar
+import kotlinproject.shared.generated.resources.free_no_calendar
+import kotlinproject.shared.generated.resources.im_in
+import kotlinproject.shared.generated.resources.not_for_me
+import kotlinproject.shared.generated.resources.remove
+import kotlinproject.shared.generated.resources.price_dialog_title
+import kotlinproject.shared.generated.resources.price_dialog_field
+import kotlinproject.shared.generated.resources.price_dialog_body
+import kotlinproject.shared.generated.resources.add_to_plan
+import kotlinproject.shared.generated.resources.skip
+import kotlinproject.shared.generated.resources.price_you_entered
+import org.jetbrains.compose.resources.stringResource
 
 /** A tentative suggestion is shown faded; once accepted it becomes solid. */
 private const val MAYBE_ALPHA = 0.55f
@@ -91,12 +115,12 @@ fun PlanScreen(
                 selected = !showCalendar,
                 onClick = { showCalendar = false },
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-            ) { Text("List") }
+            ) { Text(stringResource(Res.string.view_list)) }
             SegmentedButton(
                 selected = showCalendar,
                 onClick = { showCalendar = true },
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-            ) { Text("Calendar") }
+            ) { Text(stringResource(Res.string.view_calendar)) }
         }
 
         if (showCalendar && today != null) {
@@ -132,8 +156,8 @@ private fun CalendarLegend() {
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        LegendDot(MaterialTheme.colorScheme.primary, "In your plan")
-        LegendDot(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f), "Suggestion — tap to add")
+        LegendDot(MaterialTheme.colorScheme.primary, stringResource(Res.string.legend_in_plan))
+        LegendDot(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f), stringResource(Res.string.legend_suggestion))
     }
 }
 
@@ -166,22 +190,22 @@ private fun PlanList(
         item { FreeTimeNote(state) }
 
         if (planner.accepted.isNotEmpty()) {
-            item { SectionTitle("Your plan") }
+            item { SectionTitle(stringResource(Res.string.your_plan)) }
             items(planner.accepted, key = { it.id }) { event ->
                 PlannedCard(event, planner, today, onReject)
             }
         }
 
-        item { SectionTitle("Suggestions") }
+        item { SectionTitle(stringResource(Res.string.suggestions)) }
 
         val maybes = planner.maybes
         if (maybes.isEmpty()) {
             item {
                 Text(
                     if (planner.events.isEmpty()) {
-                        "No events loaded yet."
+                        stringResource(Res.string.no_events_loaded)
                     } else {
-                        "Nothing else fits your free time and budget."
+                        stringResource(Res.string.nothing_fits)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -223,21 +247,21 @@ private fun BudgetHeader(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Remaining budget", style = MaterialTheme.typography.labelLarge)
+                    Text(stringResource(Res.string.remaining_budget), style = MaterialTheme.typography.labelLarge)
                     Text(
-                        "AED ${money(remaining)}",
+                        amountText(remaining),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "AED ${money(planner.spent)} planned across ${planner.accepted.size} event(s)",
+                        stringResource(Res.string.planned_summary, amountText(planner.spent), planner.accepted.size),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
                 OutlinedTextField(
                     value = if (budget == 0.0) "" else money(budget),
                     onValueChange = { onBudgetChange(it.filter { c -> c.isDigit() || c == '.' }.toDoubleOrNull() ?: 0.0) },
-                    label = { Text("Budget") },
+                    label = { Text(stringResource(Res.string.budget)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.width(130.dp),
@@ -245,12 +269,12 @@ private fun BudgetHeader(
             }
             if (remaining < 0) {
                 Text(
-                    "You are over budget. Remove something, or raise the budget.",
+                    stringResource(Res.string.over_budget),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
             if (planner.accepted.isNotEmpty()) {
-                TextButton(onClick = onReset) { Text("Start over") }
+                TextButton(onClick = onReset) { Text(stringResource(Res.string.start_over)) }
             }
         }
     }
@@ -261,14 +285,14 @@ private fun FreeTimeNote(state: UiState) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                "${state.freeSlots.size} free slots over the next two weeks",
+                stringResource(Res.string.free_slots_count, state.freeSlots.size),
                 style = MaterialTheme.typography.titleSmall,
             )
             Text(
                 if (state.calendarConnected) {
-                    "From your phone's calendar."
+                    stringResource(Res.string.free_from_calendar)
                 } else {
-                    "Your calendar is not connected yet, so every day counts as free between 09:00 and 22:00."
+                    stringResource(Res.string.free_no_calendar)
                 },
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -293,8 +317,8 @@ private fun MaybeCard(
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             EventSummary(event, planner, today)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onYes, modifier = Modifier.weight(1f)) { Text("I'm in") }
-                OutlinedButton(onClick = onNo, modifier = Modifier.weight(1f)) { Text("Not for me") }
+                Button(onClick = onYes, modifier = Modifier.weight(1f)) { Text(stringResource(Res.string.im_in)) }
+                OutlinedButton(onClick = onNo, modifier = Modifier.weight(1f)) { Text(stringResource(Res.string.not_for_me)) }
             }
         }
     }
@@ -313,7 +337,7 @@ private fun PlannedCard(
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             EventSummary(event, planner, today)
-            TextButton(onClick = { onReject(event.id) }) { Text("Remove") }
+            TextButton(onClick = { onReject(event.id) }) { Text(stringResource(Res.string.remove)) }
         }
     }
 }
@@ -323,8 +347,8 @@ private fun EventSummary(event: Event, planner: PlannerState, today: kotlinx.dat
     Text(event.name, style = MaterialTheme.typography.titleMedium)
     Text(
         listOfNotNull(
-            today?.let { formatDay(event.date, it) },
-            formatTime(event),
+            today?.let { dayText(event.date, it) },
+            timeText(event),
             event.venue,
             event.city,
         ).joinToString(" · "),
@@ -332,10 +356,7 @@ private fun EventSummary(event: Event, planner: PlannerState, today: kotlinx.dat
     )
     val typed = planner.userPrices[event.id]
     Text(
-        when {
-            typed != null -> "AED ${money(typed)} (you entered this)"
-            else -> formatPrice(event)
-        },
+        if (typed != null) stringResource(Res.string.price_you_entered, amountText(typed)) else priceText(event),
         style = MaterialTheme.typography.bodyMedium,
         fontWeight = FontWeight.Medium,
     )
@@ -346,28 +367,27 @@ private fun PriceDialog(event: Event, onDismiss: () -> Unit, onConfirm: (Double?
     var text by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("What does it cost?") },
+        title = { Text(stringResource(Res.string.price_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "We don't have a price for \"${event.name}\". Enter what you expect to pay so your " +
-                        "budget stays accurate, or skip it.",
+                    stringResource(Res.string.price_dialog_body, event.name),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Price in AED") },
+                    label = { Text(stringResource(Res.string.price_dialog_field)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(text.toDoubleOrNull()) }) { Text("Add to plan") }
+            Button(onClick = { onConfirm(text.toDoubleOrNull()) }) { Text(stringResource(Res.string.add_to_plan)) }
         },
         dismissButton = {
-            TextButton(onClick = { onConfirm(null) }) { Text("Skip") }
+            TextButton(onClick = { onConfirm(null) }) { Text(stringResource(Res.string.skip)) }
         },
     )
 }
