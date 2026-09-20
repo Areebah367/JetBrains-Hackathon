@@ -29,7 +29,7 @@ fun formatDay(date: LocalDate, today: LocalDate): String = when (date) {
     else -> {
         val weekday = date.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
         val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
-        "$weekday ${date.dayOfMonth} $month"
+        "$weekday ${date.day} $month"
     }
 }
 
