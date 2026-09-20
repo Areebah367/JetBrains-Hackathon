@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What's on app prototype</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Instrument Sans",system-ui,sans-serif}
+a{color:#5B3FBF}a:hover{color:#3E2894}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid #FF8C5A;outline-offset:2px}
+.hide-scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: {{c.bg}}; color: {{c.ink}}; font-family: 'Instrument Sans', system-ui, sans-serif;">
+
+<div class="hide-scroll" style="flex-grow: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none;">
+
+<!-- ============ MY INTERESTS ============ -->
+<sc-if value="{{isInterests}}" hint-placeholder-val="{{ true }}">
+<div style="padding: 28px 20px 28px; display: flex; flex-direction: column; gap: 22px;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<div style="font-size: 13px; font-weight: 600; color: {{c.accent}};">Abu Dhabi and Dubai</div>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.02em;">What are you into?</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.45; color: {{c.muted}};">Pick a few. Anything that matches goes to the top of your list.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="12">
+<button onClick="{{t.toggle}}" aria-pressed="{{t.pressed}}" style="height: 92px; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; text-align: left; {{t.style}}">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
+<span style="font-size: 13px; font-weight: 600; line-height: 1.2;">{{t.label}}</span>
+</button>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<label for="hobbies" style="font-size: 14px; font-weight: 600;">Anything else?</label>
+<input id="hobbies" value="{{other}}" onChange="{{onOther}}" placeholder="chess, padel, jazz" style="height: 50px; border-radius: 14px; padding: 0 16px; font-size: 16px; box-sizing: border-box; width: 100%; background: {{c.surface}}; color: {{c.ink}}; border: 1.5px solid {{c.line}};">
+<span style="font-size: 12px; color: {{c.muted}};">Separate with commas. We look for these in event names.</span>
+</div>
+
+<button onClick="{{goWhatsOn}}" style="height: 56px; border-radius: 28px; border: 0; font-size: 16px; font-weight: 600; background: {{c.primary}}; color: {{c.onPrimary}}; display: flex; align-items: center; justify-content: center; gap: 10px;">
+<span>{{ctaLabel}}</span>
+</button>
+
+<div style="display: flex; align-items: center; gap: 12px; padding-top: 4px;">
+<span style="font-size: 14px; font-weight: 600; flex-grow: 1;">Appearance</span>
+<div style="display: flex; padding: 4px; border-radius: 22px; gap: 2px; background: {{c.surface2}};">
+<sc-for list="{{themes}}" as="m" hint-placeholder-count="3">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0; font-size: 13px; font-weight: 600; {{m.style}}">{{m.label}}</button>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ WHAT'S ON ============ -->
+<sc-if value="{{isWhatsOn}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column;">
+<div style="padding: 28px 20px 16px; display: flex; flex-direction: column; gap: 6px;">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 38px; line-height: 1; letter-spacing: -0.02em;">What's on</h1>
+<p style="margin: 0; font-size: 14px; color: {{c.muted}};">{{whatsOnSummary}}</p>
+</div>
+
+<div class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 14px; scrollbar-width: none;">
+<sc-for list="{{strip}}" as="d" hint-placeholder-count="7">
+<button onClick="{{d.pick}}" aria-pressed="{{d.pressed}}" aria-label="{{d.aria}}" style="flex-shrink: 0; width: 56px; height: 76px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; {{d.style}}">
+<span style="font-size: 11px; font-weight: 600;">{{d.wk}}</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1;">{{d.num}}</span>
+<span style="font-size: 10px; font-weight: 600; {{d.countStyle}}">{{d.count}}</span>
+</button>
+</sc-for>
+</div>
+
+<div class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 6px; scrollbar-width: none; align-items: center;">
+<sc-for list="{{horizons}}" as="h" hint-placeholder-count="3">
+<button onClick="{{h.pick}}" aria-pressed="{{h.pressed}}" style="flex-shrink: 0; height: 36px; padding: 0 14px; border-radius: 18px; font-size: 13px; font-weight: 600; {{h.style}}">{{h.label}}</button>
+</sc-for>
+<span style="width: 1px; height: 20px; flex-shrink: 0; background: {{c.line}};"></span>
+<sc-for list="{{cities}}" as="ct" hint-placeholder-count="2">
+<button onClick="{{ct.pick}}" aria-pressed="{{ct.pressed}}" style="flex-shrink: 0; height: 36px; padding: 0 14px; border-radius: 18px; font-size: 13px; font-weight: 600; {{ct.style}}">{{ct.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; gap: 12px; padding: 8px 20px 4px;">
+<label for="onlyMine" style="font-size: 14px; font-weight: 500; flex-grow: 1;">Only my interests</label>
+<button id="onlyMine" role="switch" aria-checked="{{only}}" onClick="{{toggleOnly}}" style="width: 52px; height: 32px; border-radius: 16px; padding: 0; border: 0; position: relative; {{switchTrack}}">
+<span style="position: absolute; top: 4px; width: 24px; height: 24px; border-radius: 12px; {{switchKnob}}"></span>
+</button>
+</div>
+
+<sc-if value="{{hasGroups}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 18px; padding: 12px 20px 28px;">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<div style="display: flex; align-items: baseline; gap: 8px;">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700;">{{g.label}}</h2>
+<span style="font-size: 12px; color: {{c.muted}};">{{g.sub}}</span>
+</div>
+<sc-for list="{{g.events}}" as="ev" hint-placeholder-count="2">
+<div style="display: flex; border-radius: 20px; overflow: hidden; background: {{c.surface}}; {{ev.ring}}">
+<div style="width: 68px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 14px 0; background: {{c.stub}}; border-right: 2px dashed {{c.bg}};">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700; line-height: 1;">{{ev.time}}</span>
+<span style="font-size: 11px; color: {{c.muted}};">{{ev.dur}}</span>
+</div>
+<div style="flex-grow: 1; min-width: 0; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 6px;">
+<sc-if value="{{ev.hasMatch}}" hint-placeholder-val="{{ false }}">
+<span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; background: {{c.accentSoft}}; color: {{c.accentInk}};">{{ev.matchText}}</span>
+</sc-if>
+<span style="font-size: 15px; font-weight: 600; line-height: 1.3;">{{ev.name}}</span>
+<span style="font-size: 12px; line-height: 1.35; color: {{c.muted}};">{{ev.where}}</span>
+<div style="display: flex; align-items: center; gap: 8px; padding-top: 4px;">
+<span style="font-size: 14px; font-weight: 600; flex-grow: 1; {{ev.priceStyle}}">{{ev.price}}</span>
+<sc-if value="{{ev.full}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 12px; border: 1px solid {{c.line}}; color: {{c.muted}};">Full</span>
+</sc-if>
+<sc-if value="{{ev.canAdd}}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ev.add}}" aria-label="{{ev.addAria}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1.5px solid {{c.primary}}; background: transparent; color: {{c.primary}}; font-size: 13px; font-weight: 600;">Plan it</button>
+</sc-if>
+<sc-if value="{{ev.inPlan}}" hint-placeholder-val="{{ false }}">
+<span style="height: 34px; padding: 0 12px; border-radius: 17px; display: flex; align-items: center; font-size: 13px; font-weight: 600; background: {{c.primary}}; color: {{c.onPrimary}};">In your plan</span>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{noGroups}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 48px 32px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;">
+<p style="margin: 0; font-size: 16px; line-height: 1.45; color: {{c.muted}};">{{emptyText}}</p>
+<button onClick="{{widen}}" style="height: 44px; padding: 0 20px; border-radius: 22px; border: 0; font-size: 14px; font-weight: 600; background: {{c.surface2}}; color: {{c.ink}};">{{widenLabel}}</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- ============ MY PLAN ============ -->
+<sc-if value="{{isPlan}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 28px 20px 28px; display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; align-items: flex-end; gap: 12px;">
+<h1 style="margin: 0; flex-grow: 1; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 38px; line-height: 1; letter-spacing: -0.02em;">My plan</h1>
+<div style="display: flex; padding: 4px; border-radius: 22px; gap: 2px; background: {{c.surface2}};">
+<sc-for list="{{planViews}}" as="pv" hint-placeholder-count="2">
+<button onClick="{{pv.pick}}" aria-pressed="{{pv.pressed}}" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0; font-size: 13px; font-weight: 600; {{pv.style}}">{{pv.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 14px; {{budgetCard}}">
+<div style="display: flex; align-items: flex-start; gap: 12px;">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 13px; font-weight: 600; opacity: 0.85;">Left to spend</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.02em;">{{remainingText}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; width: 104px;">
+<label for="budget" style="font-size: 12px; font-weight: 600; opacity: 0.85;">Budget, AED</label>
+<input id="budget" inputmode="decimal" value="{{budgetText}}" onChange="{{onBudget}}" style="height: 40px; border-radius: 12px; border: 0; padding: 0 12px; font-size: 16px; font-weight: 600; box-sizing: border-box; width: 100%; {{budgetInput}}">
+</div>
+</div>
+<div style="height: 10px; border-radius: 5px; overflow: hidden; {{meterTrack}}">
+<div style="height: 10px; border-radius: 5px; width: {{meterPct}}%; {{meterFill}}"></div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="font-size: 13px; flex-grow: 1; opacity: 0.9;">{{spentLine}}</span>
+<sc-if value="{{hasAccepted}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{reset}}" style="height: 32px; padding: 0 12px; border-radius: 16px; border: 0; font-size: 13px; font-weight: 600; background: transparent; color: inherit; text-decoration: underline;">Start over</button>
+</sc-if>
+</div>
+</div>
+
+<sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 18px;">
+<sc-if value="{{hasAccepted}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700;">Locked in</h2>
+<sc-for list="{{accepted}}" as="a" hint-placeholder-count="1">
+<div style="display: flex; align-items: center; gap: 12px; border-radius: 18px; padding: 12px 12px 12px 14px; background: {{c.primarySoft}}; color: {{c.primarySoftInk}};">
+<div style="width: 48px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center;">
+<span style="font-size: 11px; font-weight: 600;">{{a.wk}}</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1;">{{a.num}}</span>
+</div>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 14px; font-weight: 600; line-height: 1.3;">{{a.name}}</span>
+<span style="font-size: 12px; opacity: 0.85;">{{a.meta}}</span>
+</div>
+<button onClick="{{a.remove}}" aria-label="{{a.removeAria}}" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<div style="display: flex; align-items: baseline; gap: 8px;">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700; flex-grow: 1;">Fits your week</h2>
+<span style="font-size: 12px; color: {{c.muted}};">Free 09:00 to 22:00, calendar not connected</span>
+</div>
+<sc-if value="{{hasMaybes}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{maybes}}" as="m" hint-placeholder-count="3">
+<div style="border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: {{c.surface}}; border: 1.5px dashed {{c.line}};">
+<div style="display: flex; gap: 12px; align-items: flex-start;">
+<div style="width: 48px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 2px;">
+<span style="font-size: 11px; font-weight: 600; color: {{c.muted}};">{{m.wk}}</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1;">{{m.num}}</span>
+</div>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+<span style="font-size: 15px; font-weight: 600; line-height: 1.3;">{{m.name}}</span>
+<span style="font-size: 12px; color: {{c.muted}};">{{m.meta}}</span>
+<span style="font-size: 13px; font-weight: 600; {{m.priceStyle}}">{{m.price}}</span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+<button onClick="{{m.no}}" style="height: 44px; border-radius: 22px; font-size: 14px; font-weight: 600; background: transparent; border: 1.5px solid {{c.line}}; color: {{c.ink}};">Not for me</button>
+<button onClick="{{m.yes}}" style="height: 44px; border-radius: 22px; font-size: 14px; font-weight: 600; border: 0; background: {{c.primary}}; color: {{c.onPrimary}};">I'm in</button>
+</div>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{noMaybes}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 14px; line-height: 1.45; color: {{c.muted}};">Nothing else fits your free time and budget. Raise the budget or drop something.</p>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showWeek}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<div style="display: flex; gap: 14px; font-size: 12px; color: {{c.muted}};">
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: {{c.primary}};"></span>Locked in</span>
+<span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; border: 1.5px dashed {{c.accent}};"></span>Fits, tap to add</span>
+</div>
+<div class="hide-scroll" style="overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px;">
+<div style="display: flex; width: max-content;">
+<div style="width: 36px; flex-shrink: 0; padding-top: 44px;">
+<sc-for list="{{hours}}" as="hr" hint-placeholder-count="13">
+<div style="height: 40px; font-size: 10px; text-align: right; padding-right: 6px; box-sizing: border-box; color: {{c.muted}};">{{hr}}</div>
+</sc-for>
+</div>
+<sc-for list="{{weekCols}}" as="col" hint-placeholder-count="7">
+<div style="width: 92px; flex-shrink: 0; display: flex; flex-direction: column;">
+<div style="height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; {{col.headStyle}}">
+<span style="font-size: 11px; font-weight: 600;">{{col.wk}}</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700; line-height: 1;">{{col.num}}</span>
+</div>
+<div style="height: 520px; position: relative; border-left: 1px solid {{c.line}}; background: {{c.grid}};">
+<sc-for list="{{col.blocks}}" as="b" hint-placeholder-count="1">
+<button onClick="{{b.tap}}" aria-label="{{b.aria}}" style="position: absolute; left: 3px; right: 3px; top: {{b.top}}px; height: {{b.height}}px; border-radius: 8px; padding: 4px 6px; box-sizing: border-box; text-align: left; overflow: hidden; font-size: 10px; font-weight: 600; line-height: 1.2; {{b.style}}">{{b.name}}</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+</div>
+
+<!-- ============ TAB BAR ============ -->
+<nav style="flex-shrink: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 8px 12px 20px; border-top: 1px solid {{c.line}}; background: {{c.bg}};">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+<button onClick="{{tb.pick}}" aria-pressed="{{tb.pressed}}" style="height: 56px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; {{tb.color}}">
+<span style="height: 30px; width: 58px; border-radius: 15px; display: flex; align-items: center; justify-content: center; {{tb.pill}}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tb.icon}}"></path></svg>
+</span>
+<span style="font-size: 12px; font-weight: 600;">{{tb.label}}</span>
+</button>
+</sc-for>
+</nav>
+
+<!-- ============ PRICE SHEET ============ -->
+<sc-if value="{{pricing}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; display: flex; flex-direction: column; justify-content: flex-end; background: rgba(10, 6, 20, 0.55);">
+<div role="dialog" aria-modal="true" aria-labelledby="priceTitle" style="border-radius: 28px 28px 0 0; padding: 12px 20px 32px; display: flex; flex-direction: column; gap: 14px; background: {{c.surface}};">
+<span style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: {{c.line}};"></span>
+<h2 id="priceTitle" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.01em;">What will it cost?</h2>
+<p style="margin: 0; font-size: 14px; line-height: 1.45; color: {{c.muted}};">{{pricingBody}}</p>
+<label for="priceIn" style="font-size: 13px; font-weight: 600;">Price in AED</label>
+<input id="priceIn" inputmode="decimal" value="{{draft}}" onChange="{{onDraft}}" placeholder="0" style="height: 56px; border-radius: 16px; padding: 0 16px; font-size: 22px; font-weight: 600; box-sizing: border-box; width: 100%; background: {{c.bg}}; color: {{c.ink}}; border: 1.5px solid {{c.line}};">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-top: 4px;">
+<button onClick="{{skipPrice}}" style="height: 52px; border-radius: 26px; font-size: 15px; font-weight: 600; background: transparent; border: 1.5px solid {{c.line}}; color: {{c.ink}};">Skip</button>
+<button onClick="{{confirmPrice}}" style="height: 52px; border-radius: 26px; font-size: 15px; font-weight: 600; border: 0; background: {{c.primary}}; color: {{c.onPrimary}};">Add to plan</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"startTab":{"editor":"enum","options":["interests","whatson","plan"],"default":"interests"},"$preview":{"width":390,"height":844}}'>
+var DAY = function (m, d, h, mi) { return new Date(2026, m - 1, d, h, mi); };
+var EVENTS = [
+  { id: 'e1', name: 'Heart2Heart Dubai Relationship Circle, Edition 3', start: DAY(9, 20, 16, 0), end: DAY(9, 20, 18, 0), venue: 'Taj Dubai', cat: 'Wellness', min: 120, max: 120 },
+  { id: 'e2', name: 'Sohum Open Mic: Music, Poetry and More', start: DAY(9, 20, 17, 0), end: DAY(9, 20, 20, 0), venue: 'Sohum Wellness Sanctuary', cat: 'Music', min: 0, max: 0 },
+  { id: 'e3', name: 'Ignyte x TheBlock.: Founder Sessions 3', start: DAY(9, 23, 11, 0), end: DAY(9, 23, 13, 30), venue: 'TheBlock. Street, One Central', cat: 'Networking', min: 0, max: 0 },
+  { id: 'e4', name: "Entrepreneurs' Sunset Yacht", start: DAY(9, 23, 15, 30), end: DAY(9, 23, 19, 30), venue: 'Dubai Harbour', cat: 'Networking', min: null, max: null, full: true },
+  { id: 'e5', name: 'Spoken Word Open Mic at Bocasu', start: DAY(9, 23, 19, 30), end: DAY(9, 23, 22, 30), venue: 'BOCASU', cat: 'Theatre & arts', min: 0, max: 0 },
+  { id: 'e6', name: 'Minbash x PIKE limited-edition drinks', start: DAY(9, 23, 10, 0), end: DAY(9, 23, 22, 0), venue: 'Minbash, Umm Suqeim 1', cat: 'Food & drink', min: null, max: null },
+  { id: 'e7', name: 'The Ordinary Pop-Up at Paus Club', start: DAY(9, 24, 11, 0), end: DAY(9, 24, 20, 0), venue: 'Paus Club', cat: 'Markets & pop-ups', min: 0, max: 0 },
+  { id: 'e8', name: 'Flower Basket Workshop', start: DAY(9, 25, 15, 0), end: DAY(9, 25, 18, 0), venue: "Tania's Teahouse, Dubai Hills", cat: 'Workshops', min: 290, max: 290 },
+  { id: 'e9', name: 'Pilates, Sculpt and Glow', start: DAY(9, 26, 10, 0), end: DAY(9, 26, 16, 30), venue: 'House of Pilates, Nad Al Sheba 1', cat: 'Fitness', min: 150, max: null },
+  { id: 'e10', name: 'New Balance x 1Rebel Race Day', start: DAY(9, 26, 14, 15), end: DAY(9, 26, 17, 30), venue: '1Rebel', cat: 'Fitness', min: null, max: null },
+  { id: 'e11', name: 'Shukran, UAE: Dubai Camerata Singers', start: DAY(9, 26, 19, 0), end: null, venue: 'New Covent Garden Theatre, Mall of the Emirates', cat: 'Music', min: 100, max: null },
+  { id: 'e12', name: 'VERA Community Market', start: DAY(9, 26, 10, 0), end: DAY(9, 26, 18, 0), venue: 'VERA Wellness', cat: 'Markets & pop-ups', min: 0, max: 0 },
+  { id: 'e13', name: 'VERA Community Market', start: DAY(9, 27, 10, 0), end: DAY(9, 27, 18, 0), venue: 'VERA Wellness', cat: 'Markets & pop-ups', min: 0, max: 0 },
+  { id: 'e14', name: 'Ice Warrior Challenge', start: DAY(9, 27, 6, 0), end: null, venue: 'Ski Dubai', cat: 'Fitness', min: 200, max: null },
+  { id: 'e15', name: 'Wakesurfing session with WakeFlow', start: DAY(10, 3, 9, 0), end: DAY(10, 3, 10, 0), venue: 'Dubai Harbour', cat: 'Sports', min: 600, max: null },
+  { id: 'e16', name: 'SUP Yoga and Pilates at Level 77', start: DAY(10, 4, 8, 0), end: DAY(10, 4, 10, 45), venue: 'Address Beach Resort, JBR', cat: 'Fitness', min: 377, max: 377 },
+  { id: 'e17', name: 'GoLoco All Access Pass', start: DAY(10, 2, 16, 0), end: DAY(10, 2, 20, 0), venue: 'GoLoco Arena, Al Quoz', cat: 'Family', min: 299, max: 299 },
+  { id: 'e18', name: 'Ring-Crafting Workshop', start: DAY(10, 3, 14, 0), end: DAY(10, 3, 16, 0), venue: "Ivy's Secret Garden, Al Quoz", cat: 'Workshops', min: 430, max: 430 }
+];
+EVENTS.forEach(function (e) { e.city = 'Dubai'; });
+var TODAY = DAY(9, 20, 0, 0);
+var INTERESTS = [
+  ['Music', 'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'],
+  ['Sports', 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20'],
+  ['Fitness', 'M6 6v12M18 6v12M3 9v6M21 9v6M6 12h12'],
+  ['Comedy', 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01'],
+  ['Theatre & arts', 'M4 4h16v8a8 8 0 0 1-16 0zM9 9h.01M15 9h.01M9 14a4 4 0 0 0 6 0'],
+  ['Workshops', 'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z'],
+  ['Food & drink', 'M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3'],
+  ['Markets & pop-ups', 'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0'],
+  ['Networking', 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8'],
+  ['Wellness', 'M11 20A7 7 0 0 1 4 13c0-6 7-10 16-10 0 9-4 16-9 17zM4 21c3-5 6-8 10-10'],
+  ['Family', 'M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
+  ['Film', 'M3 3h18v18H3zM7 3v18M17 3v18M3 8h4M3 16h4M17 8h4M17 16h4M3 12h18']
+];
+var LIGHT = { bg: '#F4F1F8', surface: '#FFFFFF', surface2: '#E9E4F2', stub: '#EEE9F6', ink: '#1B1726', muted: '#5F5870', line: '#D6D0E0', grid: '#FAF8FC',
+  primary: '#5B3FBF', onPrimary: '#FFFFFF', primarySoft: '#E4DCFB', primarySoftInk: '#24104F',
+  accent: '#B8430F', accentSoft: '#FFE3D6', accentInk: '#7A2A06', free: '#1F7A4D', danger: '#B3261E', dangerSoft: '#FFDAD6', dangerInk: '#410002' };
+var DARK = { bg: '#15121E', surface: '#221D2E', surface2: '#2C263A', stub: '#2A2438', ink: '#EFEAF6', muted: '#ADA5BE', line: '#3D364D', grid: '#1A1624',
+  primary: '#B9A9FF', onPrimary: '#23135E', primarySoft: '#3A2F66', primarySoftInk: '#EDE7FF',
+  accent: '#FF9466', accentSoft: '#4A2616', accentInk: '#FFD3BF', free: '#7FDBA8', danger: '#FFB4AB', dangerSoft: '#5C1612', dangerInk: '#FFDAD6' };
+var WK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function key(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function hhmm(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+function num(v) { return v % 1 === 0 ? String(v) : String(Math.floor(v * 100) / 100); }
+function endOf(e) { return e.end || new Date(e.start.getTime() + 2 * 3600000); }
+function dayLabel(d) {
+  if (key(d) === key(TODAY)) return 'Today';
+  if (key(d) === key(addDays(TODAY, 1))) return 'Tomorrow';
+  return WK[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()];
+}
+function durText(e) {
+  if (!e.end) return 'about 2h';
+  var m = Math.round((e.end - e.start) / 60000); var h = Math.floor(m / 60); var r = m % 60;
+  return h ? (r ? h + 'h ' + r + 'm' : h + 'h') : r + 'm';
+}
+function priceText(e) {
+  if (e.min == null && e.max == null) return 'Price not listed';
+  var lo = e.min != null ? e.min : e.max, hi = e.max != null ? e.max : e.min;
+  if (lo === 0 && hi === 0) return 'Free';
+  if (e.max == null) return 'From AED ' + num(lo);
+  return 'AED ' + (lo === hi ? num(lo) : num(lo) + ' to ' + num(hi));
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: null, theme: null, selected: ['Music', 'Networking'], other: '', horizon: 7, city: null, day: null, only: false,
+      budget: 500, budgetText: '500', decisions: {}, prices: {}, view: 'list', pricing: null, draft: '' };
+  }
+  isDark() {
+    var t = this.state.theme;
+    if (t === 'Light') return false;
+    if (t === 'Dark') return true;
+    return !!this.props.dark;
+  }
+  matches(e) {
+    var out = [];
+    if (this.state.selected.indexOf(e.cat) >= 0) out.push(e.cat);
+    var hay = (e.name + ' ' + e.cat + ' ' + e.venue).toLowerCase();
+    this.state.other.split(',').forEach(function (h) { h = h.trim().toLowerCase(); if (h && hay.indexOf(h) >= 0) out.push(h); });
+    return out;
+  }
+  priceOf(e) {
+    if (this.state.prices[e.id] !== undefined) return this.state.prices[e.id];
+    return e.min != null ? e.min : e.max;
+  }
+  accepted() {
+    var d = this.state.decisions;
+    return EVENTS.filter(function (e) { return d[e.id] === 'yes'; }).sort(function (a, b) { return a.start - b.start; });
+  }
+  spent() { var self = this; return this.accepted().reduce(function (s, e) { var p = self.priceOf(e); return s + (p || 0); }, 0); }
+  maybes() {
+    var self = this, taken = this.accepted().map(function (e) { return [e.start, endOf(e)]; }), left = this.state.budget - this.spent();
+    return EVENTS.filter(function (e) {
+      if (self.state.decisions[e.id] || e.full) return false;
+      var s = e.start, en = endOf(e);
+      if (s < TODAY || s >= addDays(TODAY, 14) || key(s) !== key(en)) return false;
+      var a = s.getHours() * 60 + s.getMinutes(), b = en.getHours() * 60 + en.getMinutes();
+      if (a < 540 || b > 1320) return false;
+      if ((self.priceOf(e) || 0) > left) return false;
+      return !taken.some(function (t) { return s < t[1] && en > t[0]; });
+    }).sort(function (a, b) { return (a.start - b.start) || ((self.priceOf(a) || 0) - (self.priceOf(b) || 0)); });
+  }
+  accept(e) {
+    var d = Object.assign({}, this.state.decisions);
+    if (this.priceOf(e) == null && this.state.prices[e.id] === undefined) { this.setState({ pricing: e.id, draft: '' }); return; }
+    d[e.id] = 'yes'; this.setState({ decisions: d });
+  }
+  decide(e, v) { var d = Object.assign({}, this.state.decisions); if (v) d[e.id] = v; else delete d[e.id]; this.setState({ decisions: d }); }
+  chip(on, c) {
+    return on ? 'border: 1.5px solid ' + c.ink + '; background: ' + c.ink + '; color: ' + c.bg + ';'
+              : 'border: 1.5px solid ' + c.line + '; background: transparent; color: ' + c.ink + ';';
+  }
+  seg(on, c) { return on ? 'background: ' + c.surface + '; color: ' + c.ink + '; box-shadow: 0 1px 2px rgba(20,10,40,0.12);' : 'background: transparent; color: ' + c.muted + ';'; }
+
+  renderVals() {
+    var self = this, s = this.state, c = this.isDark() ? DARK : LIGHT;
+    var tab = s.tab || this.props.startTab || 'interests';
+    var go = function (t) { return function () { self.setState({ tab: t }); }; };
+
+    // Interests
+    var tiles = INTERESTS.map(function (it) {
+      var on = s.selected.indexOf(it[0]) >= 0;
+      return { label: it[0], icon: it[1], pressed: on ? 'true' : 'false',
+        style: on ? 'border: 1.5px solid ' + c.primary + '; background: ' + c.primarySoft + '; color: ' + c.primarySoftInk + ';'
+                  : 'border: 1.5px solid ' + c.line + '; background: ' + c.surface + '; color: ' + c.ink + ';',
+        toggle: function () {
+          var sel = s.selected.slice(), i = sel.indexOf(it[0]);
+          if (i >= 0) sel.splice(i, 1); else sel.push(it[0]);
+          self.setState({ selected: sel });
+        } };
+    });
+    var themes = ['System', 'Light', 'Dark'].map(function (m) {
+      var on = (s.theme || 'System') === m;
+      return { label: m, pressed: on ? 'true' : 'false', style: self.seg(on, c), pick: function () { self.setState({ theme: m === 'System' ? null : m }); } };
+    });
+
+    // What's on
+    var cityOk = function (e) { return !s.city || e.city === s.city; };
+    var pool = EVENTS.filter(function (e) { return e.start >= TODAY && cityOk(e); });
+    var hasProfile = s.selected.length > 0 || s.other.trim().length > 0;
+    var strip = [];
+    for (var i = 0; i < 7; i++) {
+      (function (d) {
+        var n = pool.filter(function (e) { return key(e.start) === key(d); }).length;
+        var on = s.day === key(d), isToday = key(d) === key(TODAY);
+        strip.push({ wk: isToday ? 'Today' : WK[d.getDay()], num: d.getDate(), count: n ? n + (n === 1 ? ' event' : ' events') : 'Quiet',
+          aria: dayLabel(d) + ', ' + n + ' events', pressed: on ? 'true' : 'false',
+          style: on ? 'border: 0; background: ' + c.primary + '; color: ' + c.onPrimary + ';'
+                    : 'border: 1.5px solid ' + c.line + '; background: ' + c.surface + '; color: ' + c.ink + ';',
+          countStyle: on ? 'opacity: 0.9;' : (n ? 'color: ' + c.accent + ';' : 'color: ' + c.muted + ';'),
+          pick: function () { self.setState({ day: on ? null : key(d) }); } });
+      })(addDays(TODAY, i));
+    }
+    var horizons = [[7, 'This week'], [30, 'This month'], [365, 'Everything']].map(function (h) {
+      var on = !s.day && s.horizon === h[0];
+      return { label: h[1], pressed: on ? 'true' : 'false', style: self.chip(on, c), pick: function () { self.setState({ horizon: h[0], day: null }); } };
+    });
+    var cities = ['Abu Dhabi', 'Dubai'].map(function (ct) {
+      var on = s.city === ct;
+      return { label: ct, pressed: on ? 'true' : 'false', style: self.chip(on, c), pick: function () { self.setState({ city: on ? null : ct }); } };
+    });
+    var last = addDays(TODAY, s.horizon);
+    var shown = pool.filter(function (e) { return s.day ? key(e.start) === s.day : e.start < last; })
+      .map(function (e) { return { e: e, m: self.matches(e) }; });
+    var matchCount = shown.filter(function (x) { return x.m.length; }).length;
+    if (s.only && hasProfile) shown = shown.filter(function (x) { return x.m.length; });
+    var byDay = {}, order = [];
+    shown.forEach(function (x) { var k = key(x.e.start); if (!byDay[k]) { byDay[k] = []; order.push(k); } byDay[k].push(x); });
+    order.sort(function (a, b) { return byDay[a][0].e.start - byDay[b][0].e.start; });
+    var groups = order.map(function (k) {
+      var list = byDay[k].sort(function (a, b) { return (b.m.length - a.m.length) || (a.e.start - b.e.start); });
+      var d = list[0].e.start;
+      return { label: dayLabel(d), sub: list.length + (list.length === 1 ? ' event' : ' events'),
+        events: list.map(function (x) {
+          var e = x.e, dec = s.decisions[e.id], p = priceText(e);
+          return { name: e.name, time: hhmm(e.start), dur: durText(e), where: e.venue + ', ' + e.city, price: p,
+            priceStyle: p === 'Free' ? 'color: ' + c.free + ';' : (p === 'Price not listed' ? 'color: ' + c.muted + '; font-weight: 500;' : ''),
+            hasMatch: x.m.length > 0, matchText: 'For you: ' + x.m.join(', '), full: !!e.full,
+            ring: x.m.length ? 'box-shadow: inset 0 0 0 1.5px ' + c.accent + ';' : '',
+            canAdd: !e.full && dec !== 'yes', inPlan: dec === 'yes', addAria: 'Add ' + e.name + ' to your plan',
+            add: function () { self.accept(e); } };
+        }) };
+    });
+    var total = shown.length;
+    var whatsOnSummary = total + (total === 1 ? ' event' : ' events') + (hasProfile ? ', ' + matchCount + ' match what you like' : '') + '.';
+
+    // Plan
+    var acc = this.accepted(), spent = this.spent(), remaining = s.budget - spent, over = remaining < 0;
+    var pct = s.budget > 0 ? Math.max(0, Math.min(100, (spent / s.budget) * 100)) : (spent > 0 ? 100 : 0);
+    var maybes = this.maybes();
+    var metaOf = function (e) { return hhmm(e.start) + ', ' + e.venue; };
+    var shownPrice = function (e) { var t = s.prices[e.id]; return t !== undefined ? (t === null ? 'Price not listed' : 'AED ' + num(t) + ', your estimate') : priceText(e); };
+    var accepted = acc.map(function (e) {
+      return { name: e.name, wk: WK[e.start.getDay()], num: e.start.getDate(), meta: metaOf(e) + '. ' + shownPrice(e),
+        removeAria: 'Remove ' + e.name, remove: function () { self.decide(e, null); } };
+    });
+    var maybeCards = maybes.map(function (e) {
+      var p = shownPrice(e);
+      return { name: e.name, wk: key(e.start) === key(TODAY) ? 'Today' : WK[e.start.getDay()], num: e.start.getDate(), meta: metaOf(e), price: p,
+        priceStyle: p === 'Free' ? 'color: ' + c.free + ';' : (p === 'Price not listed' ? 'color: ' + c.muted + ';' : ''),
+        yes: function () { self.accept(e); }, no: function () { self.decide(e, 'no'); } };
+    });
+    var accSet = {}; acc.forEach(function (e) { accSet[e.id] = 1; });
+    var maySet = {}; maybes.forEach(function (e) { maySet[e.id] = 1; });
+    var weekCols = [];
+    for (var j = 0; j < 7; j++) {
+      (function (d) {
+        var isToday = key(d) === key(TODAY);
+        var blocks = EVENTS.filter(function (e) { return key(e.start) === key(d) && (accSet[e.id] || maySet[e.id]); })
+          .sort(function (a, b) { return (accSet[a.id] ? 1 : 0) - (accSet[b.id] ? 1 : 0); })
+          .map(function (e) {
+            var a = Math.max(0, (e.start.getHours() - 9) * 60 + e.start.getMinutes());
+            var en = endOf(e), b = Math.min(780, (en.getHours() - 9) * 60 + en.getMinutes());
+            var yes = !!accSet[e.id];
+            return { name: e.name, top: Math.round(a / 60 * 40) + 1, height: Math.round(Math.max(30, b - a) / 60 * 40) - 2,
+              aria: (yes ? 'In your plan: ' : 'Add to plan: ') + e.name,
+              style: yes ? 'border: 0; background: ' + c.primary + '; color: ' + c.onPrimary + '; z-index: 2;'
+                         : 'border: 1.5px dashed ' + c.accent + '; background: ' + c.accentSoft + '; color: ' + c.accentInk + ';',
+              tap: function () { if (!yes) self.accept(e); } };
+          });
+        weekCols.push({ wk: isToday ? 'Today' : WK[d.getDay()], num: d.getDate(), blocks: blocks,
+          headStyle: isToday ? 'color: ' + c.primary + ';' : 'color: ' + c.ink + ';' });
+      })(addDays(TODAY, j));
+    }
+    var hours = []; for (var h = 9; h < 22; h++) hours.push(pad(h) + ':00');
+    var planViews = [['list', 'List'], ['week', 'Week']].map(function (v) {
+      var on = s.view === v[0];
+      return { label: v[1], pressed: on ? 'true' : 'false', style: self.seg(on, c), pick: function () { self.setState({ view: v[0] }); } };
+    });
+    var pricingEvent = EVENTS.filter(function (e) { return e.id === s.pricing; })[0];
+
+    var tabs = [['interests', 'Interests', 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z'],
+      ['whatson', "What's on", 'M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4zM14 5v2M14 11v2M14 17v2'],
+      ['plan', 'My plan', 'M3 5h18v16H3zM16 3v4M8 3v4M3 10h18']].map(function (t) {
+      var on = tab === t[0];
+      return { label: t[1], icon: t[2], pressed: on ? 'true' : 'false', pick: go(t[0]),
+        color: on ? 'color: ' + c.ink + ';' : 'color: ' + c.muted + ';',
+        pill: on ? 'background: ' + c.primarySoft + '; color: ' + c.primarySoftInk + ';' : '' };
+    });
+
+    var n = s.selected.length;
+    return {
+      c: c, tabs: tabs,
+      isInterests: tab === 'interests', isWhatsOn: tab === 'whatson', isPlan: tab === 'plan',
+      tiles: tiles, themes: themes, other: s.other,
+      onOther: function (ev) { self.setState({ other: ev.target.value }); },
+      goWhatsOn: go('whatson'),
+      ctaLabel: n ? 'See what\u2019s on for your ' + n + (n === 1 ? ' pick' : ' picks') : 'See everything on',
+      strip: strip, horizons: horizons, cities: cities, only: s.only ? 'true' : 'false',
+      toggleOnly: function () { self.setState({ only: !s.only }); },
+      switchTrack: s.only ? 'background: ' + c.primary + ';' : 'background: ' + c.surface2 + '; box-shadow: inset 0 0 0 2px ' + c.line + ';',
+      switchKnob: s.only ? 'left: 24px; background: ' + c.onPrimary + ';' : 'left: 4px; background: ' + c.muted + ';',
+      groups: groups, hasGroups: groups.length > 0, noGroups: groups.length === 0, whatsOnSummary: whatsOnSummary,
+      emptyText: s.only && hasProfile ? 'Nothing here matches your interests.' : 'Nothing on in this window.',
+      widenLabel: s.only && hasProfile ? 'Show everything' : 'Look further ahead',
+      widen: function () { if (s.only) self.setState({ only: false }); else self.setState({ day: null, horizon: s.horizon === 7 ? 30 : 365 }); },
+      planViews: planViews, showList: s.view === 'list', showWeek: s.view === 'week',
+      remainingText: (over ? '-' : '') + 'AED ' + num(Math.abs(remaining)),
+      spentLine: over ? 'Over budget. Drop something or raise it.' : 'AED ' + num(spent) + ' across ' + acc.length + (acc.length === 1 ? ' event' : ' events'),
+      budgetText: s.budgetText,
+      onBudget: function (ev) { var v = ev.target.value.replace(/[^0-9.]/g, ''); self.setState({ budgetText: v, budget: parseFloat(v) || 0 }); },
+      budgetCard: over ? 'background: ' + c.dangerSoft + '; color: ' + c.dangerInk + ';' : 'background: ' + c.primary + '; color: ' + c.onPrimary + ';',
+      budgetInput: over ? 'background: rgba(255,255,255,0.7); color: ' + c.dangerInk + ';' : 'background: rgba(255,255,255,0.18); color: ' + c.onPrimary + ';',
+      meterTrack: over ? 'background: rgba(0,0,0,0.12);' : 'background: rgba(255,255,255,0.22);',
+      meterFill: over ? 'background: ' + c.danger + ';' : 'background: ' + c.accent + ';',
+      meterPct: Math.round(pct),
+      hasAccepted: acc.length > 0, accepted: accepted, reset: function () { self.setState({ decisions: {}, prices: {} }); },
+      maybes: maybeCards, hasMaybes: maybeCards.length > 0, noMaybes: maybeCards.length === 0,
+      weekCols: weekCols, hours: hours,
+      pricing: !!pricingEvent,
+      pricingBody: pricingEvent ? 'No price is listed for ' + pricingEvent.name + '. Add your best guess so your budget stays honest, or skip it.' : '',
+      draft: s.draft, onDraft: function (ev) { self.setState({ draft: ev.target.value.replace(/[^0-9.]/g, '') }); },
+      skipPrice: function () { var p = Object.assign({}, s.prices), d = Object.assign({}, s.decisions); p[s.pricing] = null; d[s.pricing] = 'yes'; self.setState({ prices: p, decisions: d, pricing: null }); },
+      confirmPrice: function () { var p = Object.assign({}, s.prices), d = Object.assign({}, s.decisions), v = parseFloat(s.draft); p[s.pricing] = isNaN(v) ? null : v; d[s.pricing] = 'yes'; self.setState({ prices: p, decisions: d, pricing: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
