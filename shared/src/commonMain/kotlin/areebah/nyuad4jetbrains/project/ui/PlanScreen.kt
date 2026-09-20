@@ -1,42 +1,54 @@
 package areebah.nyuad4jetbrains.project.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardOptions
 import areebah.nyuad4jetbrains.project.domain.Event
 import areebah.nyuad4jetbrains.project.domain.formatDay
 import areebah.nyuad4jetbrains.project.domain.formatPrice
 import areebah.nyuad4jetbrains.project.domain.formatTime
+import areebah.nyuad4jetbrains.project.planner.Decision
 import areebah.nyuad4jetbrains.project.planner.PlannerState
 import areebah.nyuad4jetbrains.project.planner.accepted
+import areebah.nyuad4jetbrains.project.planner.decisionOf
 import areebah.nyuad4jetbrains.project.planner.maybes
 import areebah.nyuad4jetbrains.project.planner.priceOf
 import areebah.nyuad4jetbrains.project.planner.remainingBudget
@@ -45,6 +57,7 @@ import areebah.nyuad4jetbrains.project.planner.spent
 /** A tentative suggestion is shown faded; once accepted it becomes solid. */
 private const val MAYBE_ALPHA = 0.55f
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanScreen(
     state: UiState,
@@ -57,6 +70,7 @@ fun PlanScreen(
     val planner = state.planner
     val today = state.today
     var pricingEvent by remember { mutableStateOf<Event?>(null) }
+    var showCalendar by rememberSaveable { mutableStateOf(false) }
 
     pricingEvent?.let { event ->
         PriceDialog(
@@ -69,6 +83,80 @@ fun PlanScreen(
         )
     }
 
+    Column(modifier.fillMaxSize()) {
+        SingleChoiceSegmentedButtonRow(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            SegmentedButton(
+                selected = !showCalendar,
+                onClick = { showCalendar = false },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+            ) { Text("List") }
+            SegmentedButton(
+                selected = showCalendar,
+                onClick = { showCalendar = true },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+            ) { Text("Calendar") }
+        }
+
+        if (showCalendar && today != null) {
+            CalendarLegend()
+            CalendarView(
+                planner = planner,
+                freeSlots = state.freeSlots,
+                today = today,
+                onEventClick = { event ->
+                    if (planner.decisionOf(event.id) != Decision.YES) {
+                        if (planner.priceOf(event.id) == null) pricingEvent = event else onAccept(event.id, null)
+                    }
+                },
+            )
+        } else {
+            PlanList(
+                state = state,
+                planner = planner,
+                today = today,
+                onBudgetChange = onBudgetChange,
+                onAccept = onAccept,
+                onReject = onReject,
+                onReset = onReset,
+                onNeedsPrice = { pricingEvent = it },
+            )
+        }
+    }
+}
+
+@Composable
+private fun CalendarLegend() {
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        LegendDot(MaterialTheme.colorScheme.primary, "In your plan")
+        LegendDot(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f), "Suggestion — tap to add")
+    }
+}
+
+@Composable
+private fun LegendDot(color: androidx.compose.ui.graphics.Color, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Box(Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(color))
+        Text(label, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+@Composable
+private fun PlanList(
+    state: UiState,
+    planner: PlannerState,
+    today: kotlinx.datetime.LocalDate?,
+    onBudgetChange: (Double) -> Unit,
+    onAccept: (String, Double?) -> Unit,
+    onReject: (String) -> Unit,
+    onReset: () -> Unit,
+    onNeedsPrice: (Event) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -106,7 +194,7 @@ fun PlanScreen(
                     today = today,
                     onYes = {
                         // Ask for a price only when we do not already have one.
-                        if (planner.priceOf(event.id) == null) pricingEvent = event else onAccept(event.id, null)
+                        if (planner.priceOf(event.id) == null) onNeedsPrice(event) else onAccept(event.id, null)
                     },
                     onNo = { onReject(event.id) },
                 )
