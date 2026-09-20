@@ -5,15 +5,31 @@ data class Interest(val label: String, val keywords: List<String>)
 
 object Interests {
     val all: List<Interest> = listOf(
-        Interest("Music", listOf("music", "concert", "dj", "festival", "orchestra", "open mic", "live band")),
+        Interest("Music", listOf("music", "concert", "dj", "festival", "orchestra", "open mic", "live band", "choir", "singers")),
         Interest(
             "Sports",
-            listOf("sport", "football", "soccer", "basketball", "tennis", "racing", "cricket", "boxing", "mma", "golf", "rugby"),
+            listOf("sport", "football", "soccer", "basketball", "tennis", "racing", "cricket", "boxing", "mma", "golf", "rugby", "wakesurf", "surfing", "ski"),
+        ),
+        Interest(
+            "Fitness",
+            listOf("fitness", "pilates", "gym", "workout", "training", "race day", "hiit", "climbing", "obstacle", "challenge", "sculpt"),
         ),
         Interest("Comedy", listOf("comedy", "stand-up", "standup", "comedian")),
         Interest(
             "Theatre & arts",
-            listOf("theatre", "theater", "arts", "art", "ballet", "opera", "musical", "dance", "exhibition", "poetry", "spoken word", "storytelling"),
+            listOf("theatre", "theater", "arts", "art", "ballet", "opera", "musical", "dance", "exhibition", "poetry", "spoken word", "storytelling", "book fair", "literature"),
+        ),
+        Interest(
+            "Workshops",
+            listOf("workshop", "craft", "crafting", "class", "making", "diy", "pottery", "ceramics", "flower", "jewellery"),
+        ),
+        Interest(
+            "Food & drink",
+            listOf("food", "drink", "coffee", "brunch", "dining", "restaurant", "cafe", "matcha", "smoothie", "tasting", "teahouse"),
+        ),
+        Interest(
+            "Markets & pop-ups",
+            listOf("market", "pop-up", "popup", "bazaar", "shopping", "fair", "fashion", "perfume"),
         ),
         Interest(
             "Networking",
@@ -21,9 +37,9 @@ object Interests {
         ),
         Interest(
             "Wellness",
-            listOf("wellness", "yoga", "meditation", "mindfulness", "healing", "retreat", "relationship", "breathwork"),
+            listOf("wellness", "yoga", "meditation", "mindfulness", "healing", "retreat", "relationship", "breathwork", "spa", "skincare", "sound healing"),
         ),
-        Interest("Family", listOf("family", "kids", "children")),
+        Interest("Family", listOf("family", "kids", "children", "bowling", "arcade", "trampoline", "laser tag")),
         Interest("Film", listOf("film", "cinema", "movie", "screening")),
     )
 }

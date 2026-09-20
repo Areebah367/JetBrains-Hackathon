@@ -3,6 +3,9 @@ package areebah.nyuad4jetbrains.project.data
 import areebah.nyuad4jetbrains.project.domain.Cities
 import areebah.nyuad4jetbrains.project.domain.Event
 import areebah.nyuad4jetbrains.project.domain.EventSource
+import areebah.nyuad4jetbrains.project.domain.InterestProfile
+import areebah.nyuad4jetbrains.project.domain.Interests
+import areebah.nyuad4jetbrains.project.domain.matchedInterests
 import areebah.nyuad4jetbrains.project.domain.testEvent
 import areebah.nyuad4jetbrains.project.domain.testToday
 import kotlinx.coroutines.test.runTest
@@ -79,7 +82,32 @@ class EventRepositoryTest {
         assertTrue(events.all { it.source == EventSource.CURATED })
         assertTrue(events.all { it.city in Cities.all })
         assertTrue(events.any { it.priceMin != null }, "at least one curated event should carry a real price")
-        assertTrue(events.all { it.end != null }, "curated events come from pages that show an end time")
+        assertTrue(events.any { it.priceMin == null }, "unknown prices must survive as null, not become zero")
+    }
+
+    @Test
+    fun curatedEventIdsAreUnique() {
+        val ids = curatedEvents().map { it.id }
+        assertEquals(ids.size, ids.toSet().size, "duplicate ids would silently drop events when merging")
+    }
+
+    @Test
+    fun curatedEventsEndAfterTheyStart() {
+        curatedEvents().forEach { event ->
+            event.end?.let { assertTrue(it > event.start, "${event.id} ends before it starts") }
+        }
+    }
+
+    @Test
+    fun curatedEventsMatchTheInterestsOnOffer() {
+        val labels = Interests.all.map { it.label }.toSet()
+        val everything = InterestProfile(selectedLabels = labels)
+        val unmatched = curatedEvents().filter { matchedInterests(it, everything).isEmpty() }
+        assertTrue(
+            unmatched.isEmpty(),
+            "these curated events match no interest, so the 'only my interests' filter hides them: " +
+                unmatched.joinToString { it.name },
+        )
     }
 
     @Test
