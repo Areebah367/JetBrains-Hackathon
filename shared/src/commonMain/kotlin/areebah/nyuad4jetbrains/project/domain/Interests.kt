@@ -5,13 +5,24 @@ data class Interest(val label: String, val keywords: List<String>)
 
 object Interests {
     val all: List<Interest> = listOf(
-        Interest("Music", listOf("music", "concert", "dj", "festival", "orchestra")),
+        Interest("Music", listOf("music", "concert", "dj", "festival", "orchestra", "open mic", "live band")),
         Interest(
             "Sports",
             listOf("sport", "football", "soccer", "basketball", "tennis", "racing", "cricket", "boxing", "mma", "golf", "rugby"),
         ),
         Interest("Comedy", listOf("comedy", "stand-up", "standup", "comedian")),
-        Interest("Theatre & arts", listOf("theatre", "theater", "arts", "art", "ballet", "opera", "musical", "dance", "exhibition")),
+        Interest(
+            "Theatre & arts",
+            listOf("theatre", "theater", "arts", "art", "ballet", "opera", "musical", "dance", "exhibition", "poetry", "spoken word", "storytelling"),
+        ),
+        Interest(
+            "Networking",
+            listOf("networking", "founder", "startup", "investor", "pitch", "entrepreneur", "business", "conference", "summit"),
+        ),
+        Interest(
+            "Wellness",
+            listOf("wellness", "yoga", "meditation", "mindfulness", "healing", "retreat", "relationship", "breathwork"),
+        ),
         Interest("Family", listOf("family", "kids", "children")),
         Interest("Film", listOf("film", "cinema", "movie", "screening")),
     )

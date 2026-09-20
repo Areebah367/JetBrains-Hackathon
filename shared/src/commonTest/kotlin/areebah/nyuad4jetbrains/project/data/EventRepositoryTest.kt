@@ -1,13 +1,15 @@
 package areebah.nyuad4jetbrains.project.data
 
+import areebah.nyuad4jetbrains.project.domain.Cities
 import areebah.nyuad4jetbrains.project.domain.Event
+import areebah.nyuad4jetbrains.project.domain.EventSource
 import areebah.nyuad4jetbrains.project.domain.testEvent
 import areebah.nyuad4jetbrains.project.domain.testToday
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EventRepositoryTest {
@@ -15,37 +17,69 @@ class EventRepositoryTest {
         override suspend fun fetchEvents(from: LocalDate, days: Int): List<Event> = block()
     }
 
-    private val sample = listOf(testEvent("sample", "Sample"))
-    private fun repository(api: EventsApi?) = EventRepository(api, sampleEvents = { sample })
+    private val curated = listOf(testEvent("curated-1", "Community night", hour = 18))
+    private val samples = listOf(testEvent("sample-1", "Sample"))
+
+    private fun repository(api: EventsApi?, curatedEvents: List<Event> = curated) =
+        EventRepository(api, curated = { curatedEvents }, sampleEvents = { samples })
 
     @Test
-    fun withoutAKeyItUsesSampleEventsAndSaysWhy() = runTest {
-        val result = repository(api = null).loadWeek(testToday)
-        assertIs<EventsResult.Sample>(result)
-        assertEquals(sample, result.events)
-        assertTrue(result.reason.contains("API key"))
+    fun curatedAndLiveEventsAreMergedInStartOrder() = runTest {
+        val live = listOf(testEvent("tm-1", "Big show", hour = 21))
+        val result = repository(FakeApi { live }).load(testToday)
+        assertEquals(listOf("curated-1", "tm-1"), result.events.map { it.id })
+        assertEquals(1, result.curatedCount)
+        assertEquals(1, result.ticketmasterCount)
+        assertNull(result.notice)
+        assertTrue(!result.usingSamples)
     }
 
     @Test
-    fun realEventsAreReturnedAsLive() = runTest {
-        val real = listOf(testEvent("real", "Real"))
-        val result = repository(FakeApi { real }).loadWeek(testToday)
-        assertIs<EventsResult.Live>(result)
-        assertEquals(real, result.events)
+    fun withoutAKeyTheCuratedEventsStillShowWithANotice() = runTest {
+        val result = repository(api = null).load(testToday)
+        assertEquals(listOf("curated-1"), result.events.map { it.id })
+        assertEquals(0, result.ticketmasterCount)
+        assertTrue(result.notice!!.contains("API key"))
+        assertTrue(!result.usingSamples)
     }
 
     @Test
-    fun anEmptyAnswerFallsBackToSamples() = runTest {
-        val result = repository(FakeApi { emptyList() }).loadWeek(testToday)
-        assertIs<EventsResult.Sample>(result)
-        assertTrue(result.reason.contains("no Abu Dhabi events"))
+    fun aTicketmasterFailureDoesNotLoseTheCuratedEvents() = runTest {
+        val result = repository(FakeApi { error("Ticketmaster answered HTTP 401") }).load(testToday)
+        assertEquals(listOf("curated-1"), result.events.map { it.id })
+        assertTrue(result.notice!!.contains("HTTP 401"))
     }
 
     @Test
-    fun aFailureFallsBackToSamplesWithTheError() = runTest {
-        val result = repository(FakeApi { error("Ticketmaster answered HTTP 401") }).loadWeek(testToday)
-        assertIs<EventsResult.Sample>(result)
-        assertTrue(result.reason.contains("HTTP 401"))
+    fun anEmptyTicketmasterAnswerIsExplained() = runTest {
+        val result = repository(FakeApi { emptyList() }).load(testToday)
+        assertTrue(result.notice!!.contains("no UAE events"))
+        assertEquals(listOf("curated-1"), result.events.map { it.id })
+    }
+
+    @Test
+    fun samplesAppearOnlyWhenThereIsNothingElse() = runTest {
+        val result = repository(api = null, curatedEvents = emptyList()).load(testToday)
+        assertTrue(result.usingSamples)
+        assertEquals(listOf("sample-1"), result.events.map { it.id })
+    }
+
+    @Test
+    fun duplicateIdsAreKeptOnce() = runTest {
+        val sameId = listOf(testEvent("curated-1", "Duplicate from Ticketmaster"))
+        val result = repository(FakeApi { sameId }).load(testToday)
+        assertEquals(1, result.events.size)
+        assertEquals("Community night", result.events.single().name)
+    }
+
+    @Test
+    fun theCuratedListCoversBothSourcesOfTruthWeRelyOn() {
+        val events = curatedEvents()
+        assertTrue(events.isNotEmpty())
+        assertTrue(events.all { it.source == EventSource.CURATED })
+        assertTrue(events.all { it.city in Cities.all })
+        assertTrue(events.any { it.priceMin != null }, "at least one curated event should carry a real price")
+        assertTrue(events.all { it.end != null }, "curated events come from pages that show an end time")
     }
 
     @Test
@@ -53,5 +87,6 @@ class EventRepositoryTest {
         val events = sampleEventsFor(testToday)
         assertTrue(events.size >= 5)
         assertTrue(events.all { it.date >= testToday })
+        assertTrue(events.all { it.source == EventSource.SAMPLE })
     }
 }

@@ -1,6 +1,7 @@
 package areebah.nyuad4jetbrains.project.data
 
 import areebah.nyuad4jetbrains.project.domain.Event
+import areebah.nyuad4jetbrains.project.domain.EventSource
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -49,7 +50,7 @@ internal data class TmNamed(val name: String? = null)
 internal data class TmEventEmbedded(val venues: List<TmVenue>? = null)
 
 @Serializable
-internal data class TmVenue(val name: String? = null)
+internal data class TmVenue(val name: String? = null, val city: TmNamed? = null)
 
 /** Returns null for events without a usable date, since they cannot be placed in the week. */
 internal fun TmEvent.toEvent(): Event? {
@@ -58,19 +59,22 @@ internal fun TmEvent.toEvent(): Event? {
     val time = start.localTime?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
     val classification = classifications?.firstOrNull()
     val prices = priceRanges.orEmpty()
+    val venue = embedded?.venues?.firstOrNull()
 
     return Event(
         id = id,
         name = name,
         start = LocalDateTime(date, time ?: LocalTime(0, 0)),
         timeKnown = time != null,
-        venue = embedded?.venues?.firstOrNull()?.name,
+        city = venue?.city?.name.usable(),
+        venue = venue?.name,
         category = classification?.segment?.name.usable(),
         genre = classification?.genre?.name.usable(),
         priceMin = prices.mapNotNull { it.min }.minOrNull(),
         priceMax = prices.mapNotNull { it.max }.maxOrNull(),
         currency = prices.firstNotNullOfOrNull { it.currency },
         url = url,
+        source = EventSource.TICKETMASTER,
     )
 }
 

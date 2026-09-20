@@ -38,6 +38,7 @@ class TicketmasterDtoTest {
         assertEquals("2026-09-25T20:30", event.start.toString())
         assertTrue(event.timeKnown)
         assertEquals("Etihad Arena", event.venue)
+        assertEquals("Abu Dhabi", event.city)
         assertEquals("Music", event.category)
         assertEquals("Rock", event.genre)
         assertEquals(150.0, event.priceMin)

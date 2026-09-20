@@ -17,10 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import areebah.nyuad4jetbrains.project.ui.AppViewModel
 import areebah.nyuad4jetbrains.project.ui.InterestsScreen
-import areebah.nyuad4jetbrains.project.ui.WeekScreen
+import areebah.nyuad4jetbrains.project.ui.WhatsOnScreen
 
 private const val TAB_INTERESTS = 0
-private const val TAB_WEEK = 1
+private const val TAB_WHATS_ON = 1
 
 @Composable
 fun App() {
@@ -39,10 +39,10 @@ fun App() {
                         label = { Text("My interests") },
                     )
                     NavigationBarItem(
-                        selected = tab == TAB_WEEK,
-                        onClick = { tab = TAB_WEEK },
+                        selected = tab == TAB_WHATS_ON,
+                        onClick = { tab = TAB_WHATS_ON },
                         icon = {},
-                        label = { Text("This week") },
+                        label = { Text("What's on") },
                     )
                 }
             },
@@ -53,12 +53,14 @@ fun App() {
                         profile = state.profile,
                         onToggleInterest = viewModel::toggleInterest,
                         onOtherHobbiesChange = viewModel::setOtherHobbies,
-                        onShowWeek = { tab = TAB_WEEK },
+                        onShowWeek = { tab = TAB_WHATS_ON },
                     )
 
-                    else -> WeekScreen(
+                    else -> WhatsOnScreen(
                         state = state,
                         onOnlyMatchingChange = viewModel::setOnlyMatching,
+                        onHorizonChange = viewModel::setHorizon,
+                        onToggleCity = viewModel::toggleCity,
                         onRefresh = viewModel::refresh,
                     )
                 }

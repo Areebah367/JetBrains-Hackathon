@@ -17,18 +17,20 @@ import kotlinx.datetime.plus
 
 /** A source of upcoming events. Kept as an interface so tests and the repository can fake it. */
 interface EventsApi {
-    /** Events starting in the [days] days from [from], in Abu Dhabi time. */
+    /** Events starting in the [days] days from [from], in UAE time. */
     suspend fun fetchEvents(from: LocalDate, days: Int): List<Event>
 }
 
 /**
  * Ticketmaster Discovery API (the regular one, not the International one, which no longer issues keys).
- * Whether it returns Abu Dhabi events has to be confirmed with a real key.
+ *
+ * Queries the whole of the UAE rather than one city, which covers both Abu Dhabi and Dubai. Measured
+ * on 2026-09-20: 76 events, 33 in Abu Dhabi and 43 in Dubai, the earliest three weeks out, and none
+ * carrying price information. Treat it as the source for big ticketed shows, not for this weekend.
  */
 class TicketmasterApi(
     private val client: HttpClient,
     private val apiKey: String,
-    private val city: String = "Abu Dhabi",
     private val countryCode: String = "AE",
 ) : EventsApi {
 
@@ -40,7 +42,6 @@ class TicketmasterApi(
         val response = client.get(EVENTS_URL) {
             parameter("apikey", apiKey)
             parameter("countryCode", countryCode)
-            parameter("city", city)
             parameter("startDateTime", start.toString())
             parameter("endDateTime", end.toString())
             parameter("sort", "date,asc")

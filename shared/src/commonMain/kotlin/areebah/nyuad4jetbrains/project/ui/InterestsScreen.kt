@@ -37,7 +37,7 @@ fun InterestsScreen(
     ) {
         Text("What are you into?", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Pick a few. Events that match go to the top of your week.",
+            "Pick a few. Matching events in Abu Dhabi and Dubai go to the top of your list.",
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -64,7 +64,7 @@ fun InterestsScreen(
         )
 
         Button(onClick = onShowWeek, modifier = Modifier.fillMaxWidth()) {
-            Text("Show my week")
+            Text("Show what's on")
         }
     }
 }
