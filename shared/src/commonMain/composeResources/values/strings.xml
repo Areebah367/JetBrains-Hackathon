@@ -47,7 +47,7 @@
     <string name="no_events_loaded">No events loaded yet.</string>
     <string name="nothing_fits">Nothing else fits your free time and budget.</string>
     <string name="free_slots_count">%1$d free slots over the next two weeks</string>
-    <string name="free_from_calendar">From your phone\'s calendar.</string>
+    <string name="free_from_calendar">Around your meals and sleep. Sample routine — the real calendar reader is not wired up yet.</string>
     <string name="free_no_calendar">Your calendar is not connected yet, so every day counts as free between 09:00 and 22:00.</string>
     <string name="legend_in_plan">In your plan</string>
     <string name="legend_suggestion">Suggestion — tap to add</string>
