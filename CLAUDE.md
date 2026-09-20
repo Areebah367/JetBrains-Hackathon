@@ -6,7 +6,7 @@ Guidance for Claude Code when working in this repository.
 
 **Name:** TODO: project name
 **Event:** JetBrains Kotlin Multiplatform hackathon
-**One-line pitch:** TODO: what the app does and who it is for
+**One-line pitch:** An event planner that checks your budget and your calendar, finds Ticketmaster events that fit, and lets you say Yes or No to each suggestion.
 
 A Kotlin Multiplatform (KMP) app that runs on **Android and iOS** from a single shared Kotlin codebase, with the UI built in Compose Multiplatform.
 
@@ -16,6 +16,57 @@ A Kotlin Multiplatform (KMP) app that runs on **Android and iOS** from a single 
 2. **Always keep a demoable build.** Never leave `main` broken. Prefer small, working increments over big unfinished ones.
 3. **Maximize shared code.** Put logic and UI in `commonMain`. Use platform code only where a platform API is genuinely required.
 4. **Scope small.** Cut features before cutting polish on the core flow. Do not add libraries or abstractions the demo does not need.
+
+## Product scope
+
+**Working MVP only.** Build exactly this flow, and nothing else, until it works on both Android and iOS.
+
+### The flow
+
+1. **Budget.** The user sets a budget in AED.
+2. **Calendar.** The app reads the phone's calendar (read-only) and works out the free slots over the next few days. Manually entered free slots are the fallback if calendar permission is denied.
+3. **Events.** The app fetches upcoming Abu Dhabi events from the Ticketmaster International Discovery API.
+4. **Match.** An event that fits inside a free slot and costs no more than the remaining budget becomes a **"maybe" suggestion**, shown semi-transparent.
+5. **Decide.** The user taps **Yes** or **No** on each maybe.
+   - **Yes:** the card turns solid and joins the plan. Its price comes off the remaining budget. Other maybes that now overlap it, or no longer fit the budget, disappear.
+   - **No:** the event is dismissed and never suggested again.
+6. **Plan.** A screen lists the accepted events and the remaining budget.
+
+Assumption to confirm with the team: "maybe/opaque" means a tentative, semi-transparent suggestion that becomes solid on Yes.
+
+### Event states
+
+Every event is in exactly one state: `Maybe`, `Yes`, or `No`. Model this as a sealed type in `commonMain`.
+
+### Rules
+
+- Maybes are ordered simply: soonest first, then cheapest. No complex scoring yet.
+- The calendar is read-only. Do not write events back to it.
+- If Ticketmaster gives no price, show the event with a "price unknown" badge, do not subtract from the budget, and warn the user.
+- Use `kotlinx-datetime` with the `Asia/Dubai` time zone (Abu Dhabi, UTC+4, no daylight saving).
+- The Ticketmaster API key goes in `local.properties`, which is gitignored. Never commit it or paste it into chat.
+- Do not scrape Luma or Partiful. Their terms restrict access to official interfaces.
+
+### Behaviours to unit-test in `commonTest`
+
+- An event outside every free slot is never a maybe.
+- An event above the remaining budget is never a maybe.
+- Tapping Yes reduces the remaining budget by the event's price.
+- After a Yes, overlapping maybes and maybes that no longer fit the budget are removed.
+- A No event never comes back.
+- Two events cannot both be Yes if they overlap.
+
+### Build order (do not skip ahead)
+
+1. Domain model and matching logic in `commonMain`, with the tests above.
+2. Screens using sample events and manually entered free slots: budget, the maybe list with Yes/No, and the plan.
+3. Ticketmaster fetch (Ktor and kotlinx.serialization).
+4. Phone calendar reader (`CalendarReader` interface with an `expect`/`actual` for Android and iOS).
+5. Persist decisions on the device, then polish and a demo script.
+
+### Out of scope for now
+
+Location, going and travel (distance, directions), AI ranking, heat-aware scheduling, maps, routing, calendar-feed (`.ics`) import, accounts, a backend, and writing to the calendar. Revisit only after the flow above works on both platforms.
 
 ## Tech stack
 
