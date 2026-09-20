@@ -1,235 +1,258 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working in this repository.
+Guidance for Claude Code working in this repository. Two people and two Claude sessions work here in
+parallel, so the ownership and contract sections below are not advisory — ignoring them causes merge
+conflicts and wasted work.
 
 ## Project
 
-**Name:** TODO: project name
-**Event:** JetBrains Kotlin Multiplatform hackathon
-**One-line pitch:** An event planner that checks your budget and your calendar, finds Ticketmaster events that fit, and lets you say Yes or No to each suggestion.
+**Name:** TODO — still unnamed. The repo is called `JetBrains-Hackathon`; pick something real.
+**Event:** JetBrains Kotlin Multiplatform hackathon.
+**Pitch:** An event planner for Abu Dhabi and Dubai. It gathers what's on, matches it to your
+interests, and — next — checks your budget and calendar so you can say Yes or No to each suggestion.
 
-A Kotlin Multiplatform (KMP) app that runs on **Android and iOS** from a single shared Kotlin codebase, with the UI built in Compose Multiplatform.
+A Kotlin Multiplatform app running on **Android and iOS** from one shared Kotlin codebase, UI in
+Compose Multiplatform.
 
-### Hackathon priorities
+### Priorities
 
-1. **Both platforms must work.** A feature that only runs on Android is not done. Check iOS before calling anything finished.
-2. **Always keep a demoable build.** Never leave `main` broken. Prefer small, working increments over big unfinished ones.
-3. **Maximize shared code.** Put logic and UI in `commonMain`. Use platform code only where a platform API is genuinely required.
-4. **Scope small.** Cut features before cutting polish on the core flow. Do not add libraries or abstractions the demo does not need.
+1. **Both platforms must work.** A feature that only runs on Android is not done.
+2. **Always keep a demoable build.** Never leave `main` broken. Small working increments beat big
+   unfinished ones.
+3. **Maximise shared code.** Logic and UI in `commonMain`; platform code only where an OS API demands it.
+4. **Scope small.** Cut features before cutting polish on the core flow.
 
 ## Product scope
 
-**Working MVP only.** Build exactly this flow, and nothing else, until it works on both Android and iOS.
+### Built
 
-### The flow
+Interests (pick chips, type free-text hobbies) and **What's on**: events grouped by day, filtered by
+horizon (This week / This month / Everything) and city, with interest-matching events first and a
+switch to hide the rest. Events come from a curated list merged with live Ticketmaster data.
 
-1. **Budget.** The user sets a budget in AED.
-2. **Calendar.** The app reads the phone's calendar (read-only) and works out the free slots over the next few days. Manually entered free slots are the fallback if calendar permission is denied.
-3. **Events.** The app fetches upcoming Abu Dhabi events from the Ticketmaster International Discovery API.
-4. **Match.** An event that fits inside a free slot and costs no more than the remaining budget becomes a **"maybe" suggestion**, shown semi-transparent.
-5. **Decide.** The user taps **Yes** or **No** on each maybe.
-   - **Yes:** the card turns solid and joins the plan. Its price comes off the remaining budget. Other maybes that now overlap it, or no longer fit the budget, disappear.
-   - **No:** the event is dismissed and never suggested again.
-6. **Plan.** A screen lists the accepted events and the remaining budget.
+### Next
 
-Assumption to confirm with the team: "maybe/opaque" means a tentative, semi-transparent suggestion that becomes solid on Yes.
+1. **Planner engine** (#5) — budget, free slots, and the Maybe/Yes/No rules. Pure logic in `planner/`.
+2. **Screens** (#6) — budget input, Yes/No on suggestion cards, and a plan screen.
+3. **Calendar** (#4) — read the phone's calendar for busy time, read-only. Manual free slots are the
+   fallback when permission is denied.
+4. **Persistence** — interests and decisions survive a restart. Currently in memory only.
 
-### Event states
+### Out of scope
 
-Every event is in exactly one state: `Maybe`, `Yes`, or `No`. Model this as a sealed type in `commonMain`.
+Location and travel (distance, directions), AI ranking, heat-aware scheduling, maps, routing,
+calendar-feed (`.ics`) import, accounts, a backend, writing to the calendar, social features
+(referrals, attendee counts, avatars), and event creation.
 
-### Rules
+**If a new feature is proposed, say which of the four items above it displaces before building it.**
 
-- Maybes are ordered simply: soonest first, then cheapest. No complex scoring yet.
-- The calendar is read-only. Do not write events back to it.
-- If Ticketmaster gives no price, show the event with a "price unknown" badge, do not subtract from the budget, and warn the user.
-- Use `kotlinx-datetime` with the `Asia/Dubai` time zone (Abu Dhabi, UTC+4, no daylight saving).
-- The Ticketmaster API key goes in `local.properties`, which is gitignored. Never commit it or paste it into chat.
-- Do not scrape Luma or Partiful. Their terms restrict access to official interfaces.
+## Facts that drive the design
 
-### Behaviours to unit-test in `commonTest`
+Measured against the real Ticketmaster API on 2026-09-20. Do not undo the workarounds these produced
+without re-measuring.
 
-- An event outside every free slot is never a maybe.
-- An event above the remaining budget is never a maybe.
-- Tapping Yes reduces the remaining budget by the event's price.
-- After a Yes, overlapping maybes and maybes that no longer fit the budget are removed.
-- A No event never comes back.
-- Two events cannot both be Yes if they overlap.
+- **76 UAE events**: 33 Abu Dhabi, 43 Dubai. Music 29, Arts & Theatre 25, Sports 14, Misc 8.
+- **No prices anywhere.** 0 of 133 events carried `priceRanges` — not in list results, not on the
+  detail endpoint, not even for 100 London events. **Nothing may assume Ticketmaster gives a price.**
+- **Nothing soon.** Abu Dhabi events ran 2026-10-11 to 2027-01-31: 1 within 30 days, 0 within 7.
+  This is why a fixed 7-day window was replaced by a horizon filter.
+- **Images are present**: all 76 events carry 16:9, 3:2 and 4:3 images up to 640×360. Curated events
+  have none, so any image-led design needs a category-coloured fallback.
 
-### Build order (do not skip ahead)
+### Event sources
 
-1. Domain model and matching logic in `commonMain`, with the tests above.
-2. Screens using sample events and manually entered free slots: budget, the maybe list with Yes/No, and the plan.
-3. Ticketmaster fetch (Ktor and kotlinx.serialization).
-4. Phone calendar reader (`CalendarReader` interface with an `expect`/`actual` for Android and iOS).
-5. Persist decisions on the device, then polish and a demo script.
+| Source | File | Role |
+|---|---|---|
+| Curated | `data/CuratedEvents.kt` | Community events typed in by hand. The only source of real prices, end times, and near-term events. |
+| Ticketmaster | `data/TicketmasterApi.kt` | Live, for large ticketed shows booked months ahead. |
+| Sample | `data/SampleEvents.kt` | Made-up. Shown only when the other two produce nothing. |
 
-### Out of scope for now
+The repository merges curated and live, dedupes by id, and **a Ticketmaster failure must never hide
+the curated events** — it only adds a notice.
 
-Location, going and travel (distance, directions), AI ranking, heat-aware scheduling, maps, routing, calendar-feed (`.ics`) import, accounts, a backend, and writing to the calendar. Revisit only after the flow above works on both platforms.
+**Curated events are typed in by a person reading a page. Never scrape.** Luma's and Partiful's
+terms restrict access to their own interfaces. Their fixed dates go stale, so refresh them.
+
+### Ticketmaster key
+
+Use the regular Discovery API (`https://app.ticketmaster.com/discovery/v2/events.json`); the
+International Discovery API no longer issues keys. Each person registers a free key (5,000/day) and
+puts `ticketmaster.apiKey=...` in `local.properties` (gitignored) or sets `TICKETMASTER_API_KEY`.
+The build writes it into a generated file, so it never enters the repo. Without a key the app still
+runs on curated events.
+
+## Team and file ownership
+
+`Areebah367` and `mu5tafa-m`. **Both have Xcode**, so both can compile iOS locally
+(`compileKotlinIosSimulatorArm64`) — and should, before pushing. Running the app or
+`iosSimulatorArm64Test` additionally needs a simulator runtime, which is a separate download, so say
+which of the two you actually did.
+
+| Owner | Files | Work |
+|---|---|---|
+| `Areebah367` | `ui/`, `domain/`, `data/`, `App.kt`, `iosMain/`, `iosApp/` | Screens (#6), iOS calendar reader (#4) |
+| `mu5tafa-m` | `planner/`, `calendar/`, `androidMain/calendar/` | Planner engine (#5), Android calendar reader |
+
+- **Do not edit files you do not own.** If you need a change there, ask; do not reach across.
+- Shared files (`gradle/libs.versions.toml`, `shared/build.gradle.kts`, `AndroidManifest.xml`) take
+  the smallest possible change, and only after asking.
+- Branch per task (`feature/<name>`), one PR each. **Never push to `main`.** Rebase before pushing.
+- CI (`.github/workflows/build.yml`) builds Android, compiles iOS, and runs tests on every PR.
+  **Never merge a red check**, and never claim iOS works without a passing iOS compile.
+- iOS `actual` code and everything under `iosApp/` stays with `Areebah367`, so the Swift host and
+  each `expect`/`actual` pair have a single owner.
+
+## Contracts
+
+Changing either of these needs both people to agree, because both build on them.
+
+### `Event` — `domain/Event.kt`
+
+Carries `city`, an optional `end` (curated events have one, Ticketmaster events never do),
+`soldOut`, and `source` (`TICKETMASTER` / `CURATED` / `SAMPLE`). Prices are
+`priceMin` / `priceMax` / `currency` and are **usually null**.
+
+- Show "Price unknown" — never substitute zero in the UI.
+- Use `end` when present; assume a duration only when it is absent.
+- Times are local UAE time; the zone is `Asia/Dubai` (UTC+4, no daylight saving) for both cities.
+
+### `PlannerState` — `planner/PlannerState.kt`
+
+`Decision` is `MAYBE` / `YES` / `NO`, held in a map keyed by `Event.id` where absent means `MAYBE`.
+
+An event is a **maybe** only when it is undecided, fits entirely inside one free slot, costs no more
+than the remaining budget, is **not sold out**, and does not overlap an accepted event. Order
+soonest first, then cheapest.
+
+An unknown price counts as 0 against the budget, so **every unknown-price event passes the budget
+filter**. That is deliberate and the screens must surface it. Letting the user type a price when
+they accept an event (`userPrices`, `accept(eventId, price)`) is the intended fix.
 
 ## Tech stack
 
-Already in the project (from the KMP wizard; versions live in `gradle/libs.versions.toml`):
+In the project (versions in `gradle/libs.versions.toml`):
 
-- **Language:** Kotlin 2.4.x (K2 compiler)
-- **UI:** Compose Multiplatform 1.12.x with Material 3 (shared UI for Android and iOS)
-- **Build:** Gradle with Kotlin DSL, a version catalog, and Android Gradle Plugin 9.x
-- **Lifecycle:** `androidx.lifecycle` ViewModel and runtime for Compose (multiplatform artifacts)
-- **Android:** `minSdk` 24, `compileSdk` and `targetSdk` 37, JVM target 11
+- Kotlin 2.4.x (K2), Compose Multiplatform 1.12.x with Material 3, AGP 9.x, Gradle Kotlin DSL
+- `androidx.lifecycle` ViewModel and runtime for Compose
+- kotlinx.coroutines, kotlinx.serialization, kotlinx-datetime
+- Ktor Client 3.x (`OkHttp` on Android, `Darwin` on iOS) with JSON content negotiation
+- Android `minSdk` 24, `compileSdk`/`targetSdk` 37, JVM target 11
 
-Not added yet. Add only when a feature needs it, and ask first:
-
-- **Async:** kotlinx.coroutines and Flow
-- **Networking:** Ktor Client (`OkHttp` engine on Android, `Darwin` engine on iOS)
-- **Serialization:** kotlinx.serialization
-- **DI:** Koin (or manual constructor injection if the project stays small)
-- **Persistence:** Room KMP or SQLDelight; DataStore or multiplatform-settings for key/value
-- **Images:** Coil 3
-- **Navigation:** Navigation Compose (multiplatform) or Voyager/Decompose. Pick one and do not mix them.
-
-Add dependencies only through the version catalog. Confirm a library supports both Android and iOS targets (`iosArm64` and `iosSimulatorArm64`) before adding it.
+Not added — **ask first**: DI (Koin), persistence (Room KMP / SQLDelight / DataStore /
+multiplatform-settings), images (Coil 3), navigation (the app currently swaps two screens behind a
+bottom bar). Add dependencies only through the version catalog, and confirm both `iosArm64` and
+`iosSimulatorArm64` are supported first.
 
 ## Project structure
 
-This is the layout generated by the JetBrains KMP wizard with "Share UI" enabled. The Android app is a separate module from the shared code.
-
 ```
-.
-├── shared/                      # Kotlin Multiplatform module: all shared UI and logic
-│   └── src/
-│       ├── commonMain/          # Shared code: UI, ViewModels, data, domain (most code goes here)
-│       │   ├── kotlin/          #   App.kt is the root composable
-│       │   └── composeResources/ # Shared drawables, strings, fonts (accessed via `Res`)
-│       ├── commonTest/          # Shared tests
-│       ├── androidMain/         # Android-only actuals
-│       ├── androidHostTest/     # Android unit tests (run on the JVM)
-│       ├── iosMain/             # iOS-only actuals, MainViewController (entry point for iOS)
-│       └── iosTest/             # iOS tests
-├── androidApp/                  # Android application module (MainActivity, manifest, launcher icons)
-├── iosApp/                      # Xcode project (thin SwiftUI host that embeds the shared Compose UI)
-├── gradle/libs.versions.toml    # Dependency versions
-└── build.gradle.kts / settings.gradle.kts
+shared/src/
+├── commonMain/kotlin/areebah/nyuad4jetbrains/project/
+│   ├── domain/     # Event, Interests, Schedule, Format
+│   ├── data/       # TicketmasterApi, CuratedEvents, SampleEvents, EventRepository
+│   ├── ui/         # AppViewModel, InterestsScreen, WhatsOnScreen
+│   ├── planner/    # FreeSlot, PlannerState
+│   ├── calendar/   # CalendarReader
+│   └── App.kt
+├── commonTest/     # shared tests
+├── androidMain/    # Android actuals, AndroidCalendarReader
+├── androidHostTest/# JVM unit tests
+├── iosMain/        # iOS actuals, MainViewController
+└── iosTest/
+androidApp/         # MainActivity, manifest, icons
+iosApp/             # Xcode project hosting the shared Compose UI
 ```
 
-The base package is `areebah.nyuad4jetbrains.project`. Android application ID: `areebah.nyuad4jetbrains.project`. The iOS framework is named `Shared`.
+Base package and Android application ID: `areebah.nyuad4jetbrains.project`. iOS framework: `Shared`.
 
-Inside `shared/src/commonMain/kotlin/areebah/nyuad4jetbrains/project/`, prefer feature-based packages as the app grows:
-
-```
-├── ui/            # Composables, theme, navigation
-├── feature/<x>/   # Screen + ViewModel + state per feature
-├── data/          # Repositories, API clients, DTOs, local storage
-├── domain/        # Models and use cases (only if they add clarity)
-└── di/            # DI modules (if a DI library is added)
-```
-
-The existing `Platform.kt` with `Platform.android.kt` and `Platform.ios.kt` is the wizard's `expect`/`actual` example. Follow that pattern for platform differences.
-
-## Common commands
-
-Run from the repo root.
+## Commands
 
 ```bash
-# Build the Android debug APK
-./gradlew :androidApp:assembleDebug
-
-# Install and run on a connected device or emulator
-./gradlew :androidApp:installDebug
-
-# Run shared tests on Android (JVM)
-./gradlew :shared:testAndroidHostTest
-
-# Run shared tests on the iOS simulator
-./gradlew :shared:iosSimulatorArm64Test
-
-# Compile the shared iOS code (quick check that iOS code compiles; needs Xcode installed)
-./gradlew :shared:compileKotlinIosSimulatorArm64
-
-# Clean
+./gradlew :androidApp:assembleDebug              # Android APK            (needs the Android SDK)
+./gradlew :shared:testAndroidHostTest            # shared tests on the JVM (needs the Android SDK)
+./gradlew :shared:compileKotlinIosSimulatorArm64 # iOS compile      (needs Xcode, NOT the Android SDK)
+./gradlew :shared:iosSimulatorArm64Test          # iOS tests   (needs Xcode + a simulator runtime)
 ./gradlew clean
 ```
 
-**Running on iOS:** open `iosApp/iosApp.xcodeproj` in Xcode and press Run, or use the run configuration in Android Studio / IntelliJ IDEA with the KMP plugin. Requires macOS with Xcode installed. Xcode builds the `Shared` framework from the `shared` module through Gradle.
+**iOS without the Android SDK works.** `compileKotlinIosSimulatorArm64` was verified to succeed with
+no Android SDK installed; the Android tasks fail with "SDK location not found". The first
+Kotlin/Native run downloads an LLVM toolchain (~24 min), then builds take seconds.
 
-After changing shared code, run **both** the Android build and the iOS compile task above.
+**Xcode ships no simulator runtime.** `Simulator.app` and `iPhoneSimulator.platform` are bundled, but
+runtimes are a separate multi-GB download (`xcodebuild -downloadPlatform iOS`, or Xcode → Settings →
+Components). Compiling works without one; running and `iosSimulatorArm64Test` do not.
 
-## Coding conventions
+To run on iOS: open `iosApp/iosApp.xcodeproj` in Xcode and press Run. Xcode builds the `Shared`
+framework through Gradle.
+
+## Conventions
 
 ### Kotlin
 
-- Follow the official [Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html).
-- Prefer `val`, immutable data classes, and sealed types for state and results.
-- Use coroutines and Flow. No callbacks, no `GlobalScope`. Scope work to a `ViewModel` or a composable's lifecycle.
-- No `!!`. Handle nullability explicitly.
-- Keep functions small and names descriptive. Skip comments that restate the code; comment the *why*.
+Follow the [official conventions](https://kotlinlang.org/docs/coding-conventions.html). Prefer `val`,
+immutable data classes, and sealed types for state. Coroutines and Flow — no callbacks, no
+`GlobalScope`. No `!!`. Comment the *why*, not the what.
 
 ### Compose
 
-- Screens are stateless composables that take a `UiState` and event lambdas. State lives in a `ViewModel`.
-- Expose state as `StateFlow<UiState>` and collect with `collectAsState()` (or `collectAsStateWithLifecycle()` where available).
-- Hoist state. Pass lambdas down, not ViewModels.
-- Provide a `Modifier` parameter on reusable composables and put it first among the optional parameters.
-- Use Material 3 theme tokens (colors, typography, shapes). Do not hardcode colors or text sizes.
-- `@Preview` composables work in `commonMain` in this project (`ui-tooling-preview` is a dependency of `shared`), so previews can live next to the screens they show.
+Screens are stateless composables taking a `UiState` and event lambdas; state lives in a `ViewModel`
+and is exposed as `StateFlow`. Hoist state, pass lambdas rather than ViewModels. Give reusable
+composables a `Modifier` parameter, first among the optional ones. Use Material 3 theme tokens — do
+not hardcode colours or text sizes. `@Preview` works in `commonMain` here.
 
-### Multiplatform rules
+### Multiplatform
 
-- **Default to `commonMain`.** Only drop to `androidMain` or `iosMain` when a platform API is required.
-- Use `expect`/`actual` for small platform differences (for example, platform name, file paths, haptics). For larger differences, define an interface in `commonMain` and inject the platform implementation.
-- Never import `android.*`, `androidx.activity.*`, `java.*`, or `platform.UIKit.*`/`platform.Foundation.*` in `commonMain`. It will break the other platform.
-- Do not use JVM-only APIs in shared code (`java.util.*`, `String.format`, `System.currentTimeMillis`, `SimpleDateFormat`, etc.). Use `kotlinx-datetime`, `kotlin.time`, or Kotlin stdlib equivalents.
-- Resources (strings, images, fonts) go in `composeResources` and are accessed through the generated `Res` class.
-- Any platform code must have both an `actual` for Android **and** iOS. Do not leave one as `TODO()`.
+Default to `commonMain`. Use `expect`/`actual` for small platform differences; for larger ones define
+an interface in `commonMain` and inject the implementation. **Never import `android.*`,
+`androidx.activity.*`, `java.*`, `platform.UIKit.*` or `platform.Foundation.*` into `commonMain`**,
+and avoid JVM-only APIs (`java.util.*`, `String.format`, `System.currentTimeMillis`,
+`SimpleDateFormat`) — use kotlinx-datetime, `kotlin.time`, or stdlib. Every `expect` needs both
+actuals; never leave one as `TODO()`. Resources go in `composeResources`, reached via `Res`.
 
-## Workflow for Claude
+## Working rules
 
-1. **Read before writing.** Look at existing screens and modules and match their patterns.
-2. **Make the smallest change that works,** in `commonMain` first.
-3. **Verify on both platforms.** Run the Android build and the iOS compile task. If you cannot run one, say so instead of assuming it works.
-4. **Run tests** with `./gradlew :shared:testAndroidHostTest :shared:iosSimulatorArm64Test` when logic changes.
-5. **Report what you did and did not verify.** State failures with the actual error output.
+1. **Read before writing.** Match the patterns already in the file you are changing.
+2. **Smallest change that works**, in `commonMain` first.
+3. **Verify, and say what you did not verify.** Run the iOS compile and, where possible, the tests.
+   If you cannot run something on this machine, say so and point at the CI result instead of assuming.
+4. **Report failures with the actual output.**
 
 ### Do
 
-- Ask before adding a new dependency, module, or architecture layer.
-- Keep commits small and focused, with clear messages (`feat:`, `fix:`, `chore:`, `docs:`).
-- Handle loading, empty, and error states in every screen that fetches data.
-- Keep the demo flow in mind: the most important path should be smooth, fast, and good-looking.
+- Ask before adding a dependency, module, or architecture layer.
+- Small focused commits (`feat:`, `fix:`, `chore:`, `docs:`).
+- Handle loading, empty, and error states on every screen that fetches.
+- Keep the demo path smooth: it is what gets judged.
 
 ### Don't
 
-- Don't commit secrets, API keys, `local.properties`, keystores, or `xcuserdata`. Read keys from `local.properties` or environment variables and document required keys in the README.
+- Don't commit secrets, `local.properties`, keystores, or `xcuserdata`.
 - Don't edit generated files or anything under `build/`.
-- Don't hand-edit `iosApp/*.xcodeproj/project.pbxproj` unless necessary. Prefer changes in Gradle or Kotlin.
-- Don't upgrade Kotlin, Compose Multiplatform, or AGP versions mid-hackathon unless something is blocked. Version bumps eat time.
+- Don't hand-edit `iosApp/*.xcodeproj/project.pbxproj` unless there is no alternative.
+- Don't bump Kotlin, Compose Multiplatform, or AGP mid-hackathon.
 - Don't refactor working code right before the demo.
 
 ## Troubleshooting
 
-- **iOS build fails after Gradle changes:** run `./gradlew clean`, then rebuild. In Xcode, use Product > Clean Build Folder.
-- **"Unresolved reference" in `commonMain` for a platform class:** it is platform-specific. Move it behind `expect`/`actual` or an interface.
-- **Works on Android, crashes on iOS:** check for JVM-only APIs, missing `actual` implementations, and (once Ktor is added) the `Darwin` engine setup.
-- **Gradle sync issues:** use the Gradle wrapper (`./gradlew`). The build needs JDK 21, which Gradle downloads automatically (see `gradle/gradle-daemon-jvm.properties`), so the system JDK version does not matter.
-- **Kotlin/Native builds are slow:** use `compileKotlinIosSimulatorArm64` for quick checks and avoid full clean builds unless needed.
-
-## Setup
-
-Prerequisites: Android Studio or IntelliJ IDEA with the Kotlin Multiplatform plugin, Android SDK, and (for iOS) macOS with Xcode.
-
-```bash
-git clone <repo-url>
-cd <repo>
-./gradlew :androidApp:assembleDebug
-```
-
-Then open the project in Android Studio for Android, and `iosApp/iosApp.xcodeproj` in Xcode (or use the iOS run configuration) for iOS.
+- **iOS build fails after Gradle changes:** `./gradlew clean`, then rebuild; in Xcode, Product →
+  Clean Build Folder.
+- **"Unresolved reference" in `commonMain`:** the symbol is platform-specific. Put it behind
+  `expect`/`actual` or an interface.
+- **Works on Android, crashes on iOS:** look for JVM-only APIs, a missing `actual`, or the Ktor
+  `Darwin` engine.
+- **"SDK location not found":** an Android task with no Android SDK. Use the iOS compile task, or
+  install the SDK.
+- **"Xcode does not support simulator tests":** no simulator runtime installed. See Commands above.
+- **Gradle issues:** always use `./gradlew`. It fetches JDK 21 itself
+  (`gradle/gradle-daemon-jvm.properties`), so the system JDK does not matter.
 
 ## Demo checklist
 
-- [ ] App launches cleanly on an Android emulator or device
-- [ ] App launches cleanly on an iOS simulator or device
+- [ ] Launches cleanly on an Android emulator or device
+- [ ] Launches cleanly on an iOS simulator or device
 - [ ] Core flow works end to end on both platforms
-- [ ] No crashes on rotation, backgrounding, or a missing network connection
+- [ ] Curated events are still in the future — refresh them if not
+- [ ] No crash on rotation, backgrounding, or no network
 - [ ] README has the pitch, screenshots, and run instructions
 - [ ] No secrets in the repository

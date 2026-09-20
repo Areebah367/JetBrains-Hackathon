@@ -4,26 +4,37 @@ A Kotlin Multiplatform app for **Android and iOS**, built for the JetBrains Kotl
 
 ## The idea
 
-An event planner for Abu Dhabi that checks your **budget** and your **calendar**, finds **Ticketmaster** events that fit, and lets you say **Yes or No** to each suggestion.
+An event planner for **Abu Dhabi and Dubai**. It gathers what's on, matches it to your **interests**, and (next) checks your **budget** and **calendar** so you can say **Yes or No** to each suggestion.
 
-## How it works
+## What works now
 
-1. Set a budget in AED.
-2. The app reads your phone calendar and finds your free time.
-3. It fetches upcoming events from the Ticketmaster API.
-4. Events that fit a free slot and your remaining budget show up as "maybe" suggestions.
-5. Tap **Yes** to add an event to your plan (the price comes off your budget) or **No** to dismiss it for good.
+1. Tell the app your interests and hobbies.
+2. It pulls events from two places: a curated list of community events with real AED prices, and the Ticketmaster API for larger ticketed shows.
+3. **What's on** groups them by day. Filter by city and by how far ahead to look, and matching events rise to the top.
 
-The matching logic is plain Kotlin in the shared module, so it behaves the same on Android and iOS.
+## Why two sources
+
+We checked the Ticketmaster API against a real key on 2026-09-20 and found 76 UAE events — but **none of them carried a price**, and the earliest Abu Dhabi event was three weeks out. Community events fill the near-term gap and are where real prices come from. They are typed in by hand from event pages, not scraped.
 
 ## Roadmap
 
 - [x] Kotlin Multiplatform project (Android + iOS, shared Compose UI)
-- [ ] Matching logic and tests
-- [ ] Budget, maybe list with Yes/No, and plan screens
-- [ ] Ticketmaster events
+- [x] Interests, and a What's on list with city and date filters
+- [x] Ticketmaster events for Abu Dhabi and Dubai
+- [x] Curated community events with prices
+- [ ] Budget, and Yes/No on suggestions
 - [ ] Phone calendar availability
-- [ ] Save decisions on the device
+- [ ] Save choices on the device
+
+## Ticketmaster key
+
+Register a free key at the [Ticketmaster developer portal](https://developer.ticketmaster.com/), then add this line to `local.properties` in the project root (the file is not committed):
+
+```
+ticketmaster.apiKey=YOUR_KEY
+```
+
+You can set the `TICKETMASTER_API_KEY` environment variable instead. Never commit the key. Without one, the app still runs on the curated events.
 
 ## Project layout
 
@@ -35,5 +46,6 @@ The matching logic is plain Kotlin in the shared module, so it behaves the same 
 
 - Android: `./gradlew :androidApp:assembleDebug`
 - iOS: open `iosApp/iosApp.xcodeproj` in Xcode and run.
+- Tests: `./gradlew :shared:testAndroidHostTest`
 
 See `CLAUDE.md` for development guidelines.
