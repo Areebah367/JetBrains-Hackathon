@@ -2,7 +2,9 @@ package areebah.nyuad4jetbrains.project
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -14,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import areebah.nyuad4jetbrains.project.ui.AppIcons
 import areebah.nyuad4jetbrains.project.ui.AppTheme
 import areebah.nyuad4jetbrains.project.ui.AppViewModel
 import areebah.nyuad4jetbrains.project.ui.InterestsScreen
@@ -42,19 +45,19 @@ fun App() {
                     NavigationBarItem(
                         selected = tab == TAB_INTERESTS,
                         onClick = { tab = TAB_INTERESTS },
-                        icon = {},
+                        icon = { Icon(AppIcons.Interests, contentDescription = null) },
                         label = { Text(stringResource(Res.string.tab_interests)) },
                     )
                     NavigationBarItem(
                         selected = tab == TAB_WHATS_ON,
                         onClick = { tab = TAB_WHATS_ON },
-                        icon = {},
+                        icon = { Icon(AppIcons.WhatsOn, contentDescription = null) },
                         label = { Text(stringResource(Res.string.tab_whats_on)) },
                     )
                     NavigationBarItem(
                         selected = tab == TAB_PLAN,
                         onClick = { tab = TAB_PLAN },
-                        icon = {},
+                        icon = { Icon(AppIcons.Plan, contentDescription = null) },
                         label = { Text(stringResource(Res.string.tab_plan)) },
                     )
                 }
