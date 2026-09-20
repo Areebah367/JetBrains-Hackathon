@@ -1,51 +1,63 @@
 # JetBrains-Hackathon
 
-A Kotlin Multiplatform app for **Android and iOS**, built for the JetBrains Kotlin Multiplatform hackathon.
+A **Kotlin Multiplatform** event planner for Abu Dhabi and Dubai, built for the JetBrains Kotlin Multiplatform hackathon.
 
-## The idea
+Tell it what you're into, and it shows what's on, what fits your free time, and what your budget can take.
 
-An event planner for **Abu Dhabi and Dubai**. It gathers what's on, matches it to your **interests**, and (next) checks your **budget** and **calendar** so you can say **Yes or No** to each suggestion.
+## What it does
 
-## What works now
+1. **My interests** — pick categories and type free-text hobbies.
+2. **What's on** — events grouped by day, filtered by city and how far ahead you're looking, with matching events first.
+3. **My plan** — set a budget, accept or dismiss suggestions, and see them laid out in a **calendar view** against your free time. Since most events carry no price, accepting one lets you type what it costs, so the budget stays honest.
 
-1. Tell the app your interests and hobbies.
-2. It pulls events from two places: a curated list of community events with real AED prices, and the Ticketmaster API for larger ticketed shows.
-3. **What's on** groups them by day. Filter by city and by how far ahead to look, and matching events rise to the top.
+## Kotlin Multiplatform
 
-## Why two sources
+One shared codebase. **All UI and logic lives in `commonMain`** — the screens, the planner rules, the event matching, the data layer. Nothing is duplicated per platform.
 
-We checked the Ticketmaster API against a real key on 2026-09-20 and found 76 UAE events — but **none of them carried a price**, and the earliest Abu Dhabi event was three weeks out. Community events fill the near-term gap and are where real prices come from. They are typed in by hand from event pages, not scraped.
+| Target | Status |
+|---|---|
+| **Android** | APK built in CI on every commit (`:androidApp:assembleDebug`) |
+| **iOS** | Framework compiled in CI and locally (`iosArm64`, `iosSimulatorArm64`) |
+| **Desktop** | Preview tool only, for looking at the UI without a simulator |
+| **Server** | Ktor backend sharing the same `Event` model as the apps |
 
-## Roadmap
+Only two pieces are platform-specific: the Android calendar reader (`CalendarContract`) and the iOS entry point.
 
-- [x] Kotlin Multiplatform project (Android + iOS, shared Compose UI)
-- [x] Interests, and a What's on list with city and date filters
-- [x] Ticketmaster events for Abu Dhabi and Dubai
-- [x] Curated community events with prices
-- [ ] Budget, and Yes/No on suggestions
-- [ ] Phone calendar availability
-- [ ] Save choices on the device
+## Features
 
-## Ticketmaster key
+- **Dark and light themes** with an in-app switch, following the system by default.
+- **English and Arabic**, with right-to-left layout. Interest names translate for display while their identity stays stable, so switching language never breaks matching.
+- **Kotlin backend** — a Ktor server serving the curated events, reusing the app's own `@Serializable Event` class. One Kotlin model defines both ends of the wire.
+- **Two event sources** merged into one list, with the app falling back to bundled data whenever the network or server is unavailable.
 
-Register a free key at the [Ticketmaster developer portal](https://developer.ticketmaster.com/), then add this line to `local.properties` in the project root (the file is not committed):
+## Why the data works the way it does
 
+We measured the Ticketmaster API with a real key on 2026-09-20 and found **0 of 133 events carried any price**, and the earliest Abu Dhabi event was three weeks out. So the app pairs it with a curated list of community events, entered by hand, which is where real AED prices and near-term events come from. Nothing is scraped — a person reads a listing and types it in.
+
+## Running it
+
+```bash
+./gradlew :androidApp:assembleDebug              # Android APK
+./gradlew :shared:compileKotlinIosSimulatorArm64 # iOS framework
+./gradlew :shared:run                            # desktop preview
+APP_LANG=ar ./gradlew :shared:run                # desktop preview in Arabic
+./gradlew :server:run                            # curated events API on :8080
+./gradlew :shared:testAndroidHostTest            # shared tests
 ```
-ticketmaster.apiKey=YOUR_KEY
-```
 
-You can set the `TICKETMASTER_API_KEY` environment variable instead. Never commit the key. Without one, the app still runs on the curated events.
+For iOS, open `iosApp/iosApp.xcodeproj` in Xcode and press Run.
+
+### Ticketmaster key (optional)
+
+Add `ticketmaster.apiKey=YOUR_KEY` to `local.properties` (gitignored), or set `TICKETMASTER_API_KEY`. Without one the app still runs on the curated events.
 
 ## Project layout
 
-- `shared/` – shared Kotlin code and UI
-- `androidApp/` – Android app
-- `iosApp/` – iOS app (Xcode)
+```
+shared/     Shared Kotlin: UI, planner, calendar contract, data. Most of the code.
+androidApp/ Android host
+iosApp/     iOS host (Xcode)
+server/     Ktor backend
+```
 
-## Run it
-
-- Android: `./gradlew :androidApp:assembleDebug`
-- iOS: open `iosApp/iosApp.xcodeproj` in Xcode and run.
-- Tests: `./gradlew :shared:testAndroidHostTest`
-
-See `CLAUDE.md` for development guidelines.
+Built by [@Areebah367](https://github.com/Areebah367) and [@mu5tafa-m](https://github.com/mu5tafa-m). See `CLAUDE.md` for development guidelines.
