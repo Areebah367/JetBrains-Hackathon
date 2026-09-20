@@ -4,26 +4,34 @@ A Kotlin Multiplatform app for **Android and iOS**, built for the JetBrains Kotl
 
 ## The idea
 
-An event planner for Abu Dhabi that checks your **budget** and your **calendar**, finds **Ticketmaster** events that fit, and lets you say **Yes or No** to each suggestion.
+An event planner for Abu Dhabi. It pulls events from **Ticketmaster**, shows you the coming week matched to your **interests**, and (next) checks your **budget** and **calendar** so you can say **Yes or No** to each suggestion.
 
-## How it works
+## What works now
 
-1. Set a budget in AED.
-2. The app reads your phone calendar and finds your free time.
-3. It fetches upcoming events from the Ticketmaster API.
-4. Events that fit a free slot and your remaining budget show up as "maybe" suggestions.
-5. Tap **Yes** to add an event to your plan (the price comes off your budget) or **No** to dismiss it for good.
+1. Tell the app your interests and hobbies.
+2. It fetches upcoming Abu Dhabi events from the Ticketmaster API.
+3. **This week** lists the next 7 days by day, with time, venue, and price. Events that match your interests come first, and a switch hides the rest.
 
-The matching logic is plain Kotlin in the shared module, so it behaves the same on Android and iOS.
+Without a Ticketmaster key, or if the request fails, the app shows clearly labelled sample events so it can always be demoed.
 
 ## Roadmap
 
 - [x] Kotlin Multiplatform project (Android + iOS, shared Compose UI)
-- [ ] Matching logic and tests
-- [ ] Budget, maybe list with Yes/No, and plan screens
-- [ ] Ticketmaster events
+- [x] Ticketmaster events, interests, and the next-7-days list
+- [ ] Confirm Ticketmaster returns Abu Dhabi events (needs a real key)
+- [ ] Budget, and Yes/No on "maybe" suggestions
 - [ ] Phone calendar availability
-- [ ] Save decisions on the device
+- [ ] Save choices on the device
+
+## Ticketmaster key
+
+Register a free key at the [Ticketmaster developer portal](https://developer.ticketmaster.com/), then add this line to `local.properties` in the project root (the file is not committed):
+
+```
+ticketmaster.apiKey=YOUR_KEY
+```
+
+You can set the `TICKETMASTER_API_KEY` environment variable instead. Never commit the key.
 
 ## Project layout
 
@@ -35,5 +43,6 @@ The matching logic is plain Kotlin in the shared module, so it behaves the same 
 
 - Android: `./gradlew :androidApp:assembleDebug`
 - iOS: open `iosApp/iosApp.xcodeproj` in Xcode and run.
+- Tests: `./gradlew :shared:testAndroidHostTest`
 
 See `CLAUDE.md` for development guidelines.

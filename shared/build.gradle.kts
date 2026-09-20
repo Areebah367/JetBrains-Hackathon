@@ -86,7 +86,9 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.kotlin.srcDir(project.files(secretsDir).builtBy(generateSecrets))
+        commonMain {
+            kotlin.srcDir(project.files(secretsDir).builtBy(generateSecrets))
+        }
 
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)

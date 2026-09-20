@@ -6,7 +6,7 @@ Guidance for Claude Code when working in this repository.
 
 **Name:** TODO: project name
 **Event:** JetBrains Kotlin Multiplatform hackathon
-**One-line pitch:** An event planner that checks your budget and your calendar, finds Ticketmaster events that fit, and lets you say Yes or No to each suggestion.
+**One-line pitch:** An event planner for Abu Dhabi. It finds Ticketmaster events, shows you the coming week matched to your interests, and (next) checks your budget and calendar so you can say Yes or No to each suggestion.
 
 A Kotlin Multiplatform (KMP) app that runs on **Android and iOS** from a single shared Kotlin codebase, with the UI built in Compose Multiplatform.
 
@@ -19,13 +19,29 @@ A Kotlin Multiplatform (KMP) app that runs on **Android and iOS** from a single 
 
 ## Product scope
 
-**Working MVP only.** Build exactly this flow, and nothing else, until it works on both Android and iOS.
+**Working MVP only.** Build exactly what is listed, and nothing else, until it works on both Android and iOS.
 
-### The flow
+### Current focus (build this now)
+
+No calendar and no budget yet. Only this:
+
+1. **Fetch events** from the Ticketmaster Discovery API for Abu Dhabi.
+2. **Interests.** The user picks interests and types other hobbies in the app.
+3. **This week.** A list of the next 7 days, grouped by day. Events matching the user's interests come first, and a switch hides the rest.
+
+Status: built on branch `feature/events-and-interests`. The Ticketmaster call has not yet been tried with a real key, so it is not confirmed that Abu Dhabi events come back. Until then the app shows clearly labelled sample events.
+
+### Ticketmaster key
+
+- Use the regular **Discovery API** (`https://app.ticketmaster.com/discovery/v2/events.json`). The International Discovery API no longer issues new keys.
+- Each person registers their own free key at the Ticketmaster developer portal, then adds `ticketmaster.apiKey=YOUR_KEY` to `local.properties` (gitignored) or sets the `TICKETMASTER_API_KEY` environment variable. The build turns it into a generated file, so it never enters the repo.
+- With no key, or on any failure, the app shows sample events and says why. Do not remove this fallback.
+
+### Full flow (after the current focus)
 
 1. **Budget.** The user sets a budget in AED.
 2. **Calendar.** The app reads the phone's calendar (read-only) and works out the free slots over the next few days. Manually entered free slots are the fallback if calendar permission is denied.
-3. **Events.** The app fetches upcoming Abu Dhabi events from the Ticketmaster International Discovery API.
+3. **Events.** The app fetches upcoming Abu Dhabi events from the Ticketmaster Discovery API.
 4. **Match.** An event that fits inside a free slot and costs no more than the remaining budget becomes a **"maybe" suggestion**, shown semi-transparent.
 5. **Decide.** The user taps **Yes** or **No** on each maybe.
    - **Yes:** the card turns solid and joins the plan. Its price comes off the remaining budget. Other maybes that now overlap it, or no longer fit the budget, disappear.
@@ -95,16 +111,17 @@ Already in the project (from the KMP wizard; versions live in `gradle/libs.versi
 - **Build:** Gradle with Kotlin DSL, a version catalog, and Android Gradle Plugin 9.x
 - **Lifecycle:** `androidx.lifecycle` ViewModel and runtime for Compose (multiplatform artifacts)
 - **Android:** `minSdk` 24, `compileSdk` and `targetSdk` 37, JVM target 11
+- **Async:** kotlinx.coroutines and Flow
+- **Networking:** Ktor Client 3.x (`OkHttp` engine on Android, `Darwin` engine on iOS), with JSON content negotiation
+- **Serialization:** kotlinx.serialization
+- **Dates:** kotlinx-datetime, always in the `Asia/Dubai` zone for Abu Dhabi
 
 Not added yet. Add only when a feature needs it, and ask first:
 
-- **Async:** kotlinx.coroutines and Flow
-- **Networking:** Ktor Client (`OkHttp` engine on Android, `Darwin` engine on iOS)
-- **Serialization:** kotlinx.serialization
 - **DI:** Koin (or manual constructor injection if the project stays small)
-- **Persistence:** Room KMP or SQLDelight; DataStore or multiplatform-settings for key/value
+- **Persistence:** Room KMP or SQLDelight; DataStore or multiplatform-settings for key/value (interests are in memory only for now)
 - **Images:** Coil 3
-- **Navigation:** Navigation Compose (multiplatform) or Voyager/Decompose. Pick one and do not mix them.
+- **Navigation:** Navigation Compose (multiplatform) or Voyager/Decompose. Pick one and do not mix them. Today the app switches between two screens with a bottom bar.
 
 Add dependencies only through the version catalog. Confirm a library supports both Android and iOS targets (`iosArm64` and `iosSimulatorArm64`) before adding it.
 
