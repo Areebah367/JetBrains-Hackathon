@@ -83,12 +83,14 @@ runs on curated events.
 
 ## Team and file ownership
 
-`Areebah367` and `mu5tafa-m`. **Only Areebah367 has Xcode**, so `mu5tafa-m` cannot compile or run
-anything iOS locally and depends on CI for it.
+`Areebah367` and `mu5tafa-m`. **Both have Xcode**, so both can compile iOS locally
+(`compileKotlinIosSimulatorArm64`) — and should, before pushing. Running the app or
+`iosSimulatorArm64Test` additionally needs a simulator runtime, which is a separate download, so say
+which of the two you actually did.
 
 | Owner | Files | Work |
 |---|---|---|
-| `Areebah367` | `ui/`, `domain/`, `data/`, `App.kt`, `iosMain/`, `iosApp/` | Screens (#6), iOS calendar reader (#4), all iOS verification |
+| `Areebah367` | `ui/`, `domain/`, `data/`, `App.kt`, `iosMain/`, `iosApp/` | Screens (#6), iOS calendar reader (#4) |
 | `mu5tafa-m` | `planner/`, `calendar/`, `androidMain/calendar/` | Planner engine (#5), Android calendar reader |
 
 - **Do not edit files you do not own.** If you need a change there, ask; do not reach across.
@@ -97,6 +99,8 @@ anything iOS locally and depends on CI for it.
 - Branch per task (`feature/<name>`), one PR each. **Never push to `main`.** Rebase before pushing.
 - CI (`.github/workflows/build.yml`) builds Android, compiles iOS, and runs tests on every PR.
   **Never merge a red check**, and never claim iOS works without a passing iOS compile.
+- iOS `actual` code and everything under `iosApp/` stays with `Areebah367`, so the Swift host and
+  each `expect`/`actual` pair have a single owner.
 
 ## Contracts
 
