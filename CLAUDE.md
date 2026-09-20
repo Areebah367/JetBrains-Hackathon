@@ -155,6 +155,7 @@ shared/src/
 │   ├── calendar/   # CalendarReader
 │   └── App.kt
 ├── commonTest/     # shared tests
+├── desktopMain/    # DesktopPreview.kt — preview entry point only
 ├── androidMain/    # Android actuals, AndroidCalendarReader
 ├── androidHostTest/# JVM unit tests
 ├── iosMain/        # iOS actuals, MainViewController
@@ -172,6 +173,7 @@ Base package and Android application ID: `areebah.nyuad4jetbrains.project`. iOS 
 ./gradlew :shared:testAndroidHostTest            # shared tests on the JVM (needs the Android SDK)
 ./gradlew :shared:compileKotlinIosSimulatorArm64 # iOS compile      (needs Xcode, NOT the Android SDK)
 ./gradlew :shared:iosSimulatorArm64Test          # iOS tests   (needs Xcode + a simulator runtime)
+./gradlew :shared:run                            # desktop preview window (no simulator needed)
 ./gradlew clean
 ```
 
@@ -185,6 +187,11 @@ Components). Compiling works without one; running and `iosSimulatorArm64Test` do
 
 To run on iOS: open `iosApp/iosApp.xcodeproj` in Xcode and press Run. Xcode builds the `Shared`
 framework through Gradle.
+
+**The desktop target is a preview tool, not a product target.** `./gradlew :shared:run` opens the
+shared Compose UI in a phone-sized window so it can be looked at without a simulator or emulator.
+Android and iOS are what ship; something working only on desktop is not done. It shares
+`commonMain`, so CI compiles it to stop it rotting.
 
 ## Conventions
 

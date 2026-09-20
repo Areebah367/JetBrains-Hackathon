@@ -28,5 +28,9 @@ jobs:
       - name: iOS compile (simulator)
         run: ./gradlew :shared:compileKotlinIosSimulatorArm64
 
+      # Desktop is a preview-only target, but it shares commonMain, so it has to keep compiling.
+      - name: Desktop compile
+        run: ./gradlew :shared:compileKotlinDesktop
+
       - name: Shared tests (Android host)
         run: ./gradlew :shared:testAndroidHostTest
