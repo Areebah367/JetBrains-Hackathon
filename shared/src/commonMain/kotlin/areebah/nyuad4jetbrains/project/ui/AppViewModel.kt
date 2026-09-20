@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import areebah.nyuad4jetbrains.project.data.EventRepository
 import areebah.nyuad4jetbrains.project.data.EventsResult
 import areebah.nyuad4jetbrains.project.data.defaultEventRepository
+import areebah.nyuad4jetbrains.project.data.RoutineBlock
 import areebah.nyuad4jetbrains.project.data.demoBusyBlocks
+import areebah.nyuad4jetbrains.project.data.demoRoutine
 import areebah.nyuad4jetbrains.project.domain.AbuDhabiTime
 import areebah.nyuad4jetbrains.project.domain.Horizon
 import areebah.nyuad4jetbrains.project.domain.InterestProfile
@@ -42,6 +44,8 @@ data class UiState(
      */
     val freeSlots: List<FreeSlot> = emptyList(),
     val calendarConnected: Boolean = false,
+    /** The labelled busy time behind [freeSlots], drawn in the calendar view. */
+    val busyBlocks: List<RoutineBlock> = emptyList(),
     val themeMode: ThemeMode = ThemeMode.DARK,
 ) {
     /** The planner rebuilt from the current state. Cheap: everything it derives is computed on read. */
@@ -81,6 +85,7 @@ class AppViewModel(
                         days = PLANNING_DAYS,
                     ),
                     calendarConnected = true,
+                    busyBlocks = demoRoutine(today, PLANNING_DAYS),
                 )
             }
         }

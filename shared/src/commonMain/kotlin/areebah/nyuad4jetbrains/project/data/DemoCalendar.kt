@@ -18,18 +18,25 @@ import kotlinx.datetime.plus
  * Inside the planner's 09:00-22:00 window this leaves 10:00-13:00, 14:00-19:00 and 20:00-21:00 free.
  */
 fun demoBusyBlocks(from: LocalDate, days: Int): List<BusyBlock> =
+    demoRoutine(from, days).map { BusyBlock(it.start, it.end) }
+
+/** A busy block the calendar can label, so the user sees *why* a slot is taken. */
+data class RoutineBlock(val label: String, val start: LocalDateTime, val end: LocalDateTime)
+
+fun demoRoutine(from: LocalDate, days: Int): List<RoutineBlock> =
     (0 until days).flatMap { offset ->
         val day = from.plus(offset, DateTimeUnit.DAY)
         listOf(
-            busy(day, 9, 0, 10, 0),    // breakfast
-            busy(day, 13, 0, 14, 0),   // lunch
-            busy(day, 19, 0, 20, 0),   // dinner
-            busy(day, 21, 0, 23, 59),  // sleep, from 21:00 to the end of the day
+            block("Breakfast", day, 9, 10),
+            block("Lunch", day, 13, 14),
+            block("Dinner", day, 19, 20),
+            block("Sleep", day, 21, 24),
         )
     }
 
-private fun busy(day: LocalDate, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) =
-    BusyBlock(
-        start = LocalDateTime(day, LocalTime(startHour, startMinute)),
-        end = LocalDateTime(day, LocalTime(endHour, endMinute)),
-    )
+/** [endHour] 24 means the end of the day, which LocalTime cannot express directly. */
+private fun block(label: String, day: LocalDate, startHour: Int, endHour: Int) = RoutineBlock(
+    label = label,
+    start = LocalDateTime(day, LocalTime(startHour, 0)),
+    end = LocalDateTime(day, if (endHour >= 24) LocalTime(23, 59) else LocalTime(endHour, 0)),
+)

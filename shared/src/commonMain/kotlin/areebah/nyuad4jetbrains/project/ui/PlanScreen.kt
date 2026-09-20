@@ -53,6 +53,7 @@ import areebah.nyuad4jetbrains.project.planner.spent
 import kotlinproject.shared.generated.resources.Res
 import kotlinproject.shared.generated.resources.view_list
 import kotlinproject.shared.generated.resources.view_calendar
+import kotlinproject.shared.generated.resources.legend_busy
 import kotlinproject.shared.generated.resources.legend_in_plan
 import kotlinproject.shared.generated.resources.legend_suggestion
 import kotlinproject.shared.generated.resources.your_plan
@@ -128,6 +129,7 @@ fun PlanScreen(
             CalendarView(
                 planner = planner,
                 freeSlots = state.freeSlots,
+                busyBlocks = state.busyBlocks,
                 today = today,
                 onEventClick = { event ->
                     if (planner.decisionOf(event.id) != Decision.YES) {
@@ -158,6 +160,7 @@ private fun CalendarLegend() {
     ) {
         LegendDot(MaterialTheme.colorScheme.primary, stringResource(Res.string.legend_in_plan))
         LegendDot(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f), stringResource(Res.string.legend_suggestion))
+        LegendDot(MaterialTheme.colorScheme.surfaceVariant, stringResource(Res.string.legend_busy))
     }
 }
 
