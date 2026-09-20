@@ -1,47 +1,66 @@
 package areebah.nyuad4jetbrains.project
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import areebah.nyuad4jetbrains.project.ui.AppViewModel
+import areebah.nyuad4jetbrains.project.ui.InterestsScreen
+import areebah.nyuad4jetbrains.project.ui.WeekScreen
 
-import kotlinproject.shared.generated.resources.Res
-import kotlinproject.shared.generated.resources.compose_multiplatform
+private const val TAB_INTERESTS = 0
+private const val TAB_WEEK = 1
 
 @Composable
-@Preview
 fun App() {
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+        val viewModel: AppViewModel = viewModel { AppViewModel() }
+        val state by viewModel.state.collectAsState()
+        var tab by rememberSaveable { mutableIntStateOf(TAB_INTERESTS) }
+
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    NavigationBarItem(
+                        selected = tab == TAB_INTERESTS,
+                        onClick = { tab = TAB_INTERESTS },
+                        icon = {},
+                        label = { Text("My interests") },
+                    )
+                    NavigationBarItem(
+                        selected = tab == TAB_WEEK,
+                        onClick = { tab = TAB_WEEK },
+                        icon = {},
+                        label = { Text("This week") },
+                    )
+                }
+            },
+        ) { padding ->
+            Box(Modifier.padding(padding)) {
+                when (tab) {
+                    TAB_INTERESTS -> InterestsScreen(
+                        profile = state.profile,
+                        onToggleInterest = viewModel::toggleInterest,
+                        onOtherHobbiesChange = viewModel::setOtherHobbies,
+                        onShowWeek = { tab = TAB_WEEK },
+                    )
+
+                    else -> WeekScreen(
+                        state = state,
+                        onOnlyMatchingChange = viewModel::setOnlyMatching,
+                        onRefresh = viewModel::refresh,
+                    )
                 }
             }
         }
