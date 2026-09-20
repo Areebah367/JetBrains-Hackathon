@@ -68,6 +68,24 @@ Every event is in exactly one state: `Maybe`, `Yes`, or `No`. Model this as a se
 
 Location, going and travel (distance, directions), AI ranking, heat-aware scheduling, maps, routing, calendar-feed (`.ics`) import, accounts, a backend, and writing to the calendar. Revisit only after the flow above works on both platforms.
 
+## Team and ownership
+
+Two people work on this repo: `Areebah367` and `mu5tafa-m`. **Only Areebah367 has Xcode.** Kotlin/Native cannot compile the iOS targets without Xcode, so `mu5tafa-m` cannot build or run anything iOS locally.
+
+| Owner | Work |
+|---|---|
+| `Areebah367` | Matching logic and tests, screens, iOS `actual` code (for example the `EventKit` calendar reader), and all iOS verification |
+| `mu5tafa-m` | Ticketmaster client, the `CalendarReader` interface and its Android `actual` |
+
+Rules that follow from this:
+
+- Keep `commonMain` free of Android and JVM APIs, so it compiles for iOS even when the author cannot check it.
+- Never claim iOS works unless the iOS compile task has passed, locally or in CI. If you cannot run it on this machine, say so and point to the CI result.
+- iOS `actual` implementations and iOS verification go through `Areebah367`.
+- Work on a branch (`feature/<name>`) and open a pull request. Never push directly to `main`. Run `git pull --rebase origin main` before you start.
+- The GitHub Actions workflow in `.github/workflows/build.yml` builds Android and compiles iOS on every pull request. Do not merge a pull request with a red check.
+- Agree on the shape of the `Event` model before writing code that depends on it. Both people build on it.
+
 ## Tech stack
 
 Already in the project (from the KMP wizard; versions live in `gradle/libs.versions.toml`):
