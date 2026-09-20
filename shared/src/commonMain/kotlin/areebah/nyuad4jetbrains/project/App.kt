@@ -17,10 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import areebah.nyuad4jetbrains.project.ui.AppViewModel
 import areebah.nyuad4jetbrains.project.ui.InterestsScreen
+import areebah.nyuad4jetbrains.project.ui.PlanScreen
 import areebah.nyuad4jetbrains.project.ui.WhatsOnScreen
 
 private const val TAB_INTERESTS = 0
 private const val TAB_WHATS_ON = 1
+private const val TAB_PLAN = 2
 
 @Composable
 fun App() {
@@ -44,6 +46,12 @@ fun App() {
                         icon = {},
                         label = { Text("What's on") },
                     )
+                    NavigationBarItem(
+                        selected = tab == TAB_PLAN,
+                        onClick = { tab = TAB_PLAN },
+                        icon = {},
+                        label = { Text("My plan") },
+                    )
                 }
             },
         ) { padding ->
@@ -56,12 +64,20 @@ fun App() {
                         onShowWeek = { tab = TAB_WHATS_ON },
                     )
 
-                    else -> WhatsOnScreen(
+                    TAB_WHATS_ON -> WhatsOnScreen(
                         state = state,
                         onOnlyMatchingChange = viewModel::setOnlyMatching,
                         onHorizonChange = viewModel::setHorizon,
                         onToggleCity = viewModel::toggleCity,
                         onRefresh = viewModel::refresh,
+                    )
+
+                    else -> PlanScreen(
+                        state = state,
+                        onBudgetChange = viewModel::setBudget,
+                        onAccept = viewModel::accept,
+                        onReject = viewModel::reject,
+                        onReset = viewModel::resetPlan,
                     )
                 }
             }
